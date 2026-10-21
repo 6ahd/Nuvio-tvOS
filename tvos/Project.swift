@@ -40,6 +40,7 @@ let app: Target = .target(
         .folderReference(path: "../legacy/deploy/app/fonts"),
         "Assets.xcassets",
     ],
+    entitlements: .file(path: "DexLegacy.entitlements"),
     scripts: [
         // Same post step as NuvioTVOS: the FFmpeg frameworks AetherEngine
         // brings must be thinned and present in the simulator .app.
@@ -49,7 +50,6 @@ let app: Target = .target(
             basedOnDependencyAnalysis: false
         ),
     ],
-    entitlements: .file(path: "DexLegacy.entitlements"),
     dependencies: [
         .target(name: "DexLegacyTopShelf"),
         .package(product: "AetherEngine"),
