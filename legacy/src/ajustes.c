@@ -968,7 +968,13 @@ static const char *V_ANIM[]      = { "Completas", "Reduzidas" };
 static const char *V_FONTE_UI[]  = { "Inter", "LG Display", "Droid Sans",
                                      "Montserrat", "Roboto",
                                      "Atkinson Hyperlegible Next",
-                                     "JetBrains Sans" };
+                                     "JetBrains Sans",
+                                     "IBM Plex Sans Arabic", "Noto Naskh Arabic",
+#ifdef NV_FONTES_EXTRA
+                                     "Inter Arabic", "Al Jazeera", "Mohand", "Hacen Promoter",
+                                     "Monadi", "Tonos", "SF Arabic", "Amazon Ember",
+#endif
+                                   };
 // A ORDEM IMPORTA: o indice 0 e o padrao (ver a lista de padroes, que e
 // posicional), e o padrao tem de ser 1080p. Numa TV que NAO concede a
 // superficie 4K a escolha nao faz nada, e numa que concede ela quadruplica o
@@ -987,7 +993,15 @@ static const char *V_LEG_FUNDO[] = { "Nenhum", "Escuro 25%", "Escuro 50%", "Escu
 static const char *V_LEG_BORDA[] = { "Nenhuma", "Contorno", "Sombra" };
 static const char *V_LEG_OPAC[] = { "100%", "75%", "50%", "25%" };
 static const char *V_LEG_POS[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
-static const char *V_LEG2_FONTE[] = { "Igual à principal", "Inter", "LG Display", "Droid Sans", "Montserrat", "Roboto", "Atkinson Hyperlegible Next", "JetBrains Sans" };
+static const char *V_LEG2_FONTE[] = { "Igual à principal", "Inter", "LG Display", "Droid Sans", "Montserrat", "Roboto", "Atkinson Hyperlegible Next", "JetBrains Sans",
+                                      "IBM Plex Sans Arabic", "Noto Naskh Arabic",
+#ifdef NV_FONTES_EXTRA
+                                      "Inter Arabic", "Al Jazeera", "Mohand", "Hacen Promoter",
+                                      "Monadi", "Tonos", "SF Arabic", "Amazon Ember",
+#endif
+                                    };
+_Static_assert(sizeof V_LEG2_FONTE / sizeof *V_LEG2_FONTE == TXT_FAMILIA_N + 1,
+               "The second subtitle line lists every family after 'same as main'");
 static const char *V_LEG2_OPAC[] = { "Igual à principal", "100%", "75%", "50%", "25%" };
 static const char *V_LEG2_COR_BORDA[] = { "Igual à principal", "Preto", "Branco", "Amarelo", "Verde", "Azul", "Vermelho" };
 static const char *V_LEG2_NEGRITO[] = { "Igual à principal", "Ligado", "Desligado" };
@@ -10779,7 +10793,7 @@ int ajustes_teste_quadro(const char *id) {
 void ajustes_teste_arte(int n) { ajArteFundoN = n; }
 
 void ajustes_teste_fonte_interface(int familia) {
-  if (familia < TXT_FAMILIA_INTER || familia > TXT_FAMILIA_JETBRAINS) return;
+  if (familia < TXT_FAMILIA_INTER || familia >= TXT_FAMILIA_N) return;
   valor[AJ_FONTE_UI] = familia;
   txt_definir_fonte_interface((TxtFamilia)familia);
 }

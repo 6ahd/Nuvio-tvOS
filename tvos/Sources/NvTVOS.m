@@ -196,6 +196,8 @@ static void nvTVOSCenas(void) {
     origMakeKeyAndVisible = (void *)method_setImplementation(m, (IMP)nvMakeKeyAndVisible);
 }
 
+int nv_tvos_abrir_link(NSURL *url);   // NvTopShelf.m
+
 @interface NvSceneDelegate : UIResponder <UIWindowSceneDelegate>
 @property (strong, nonatomic) UIWindow *window;
 @end
@@ -216,6 +218,7 @@ static void nvTVOSCenas(void) {
     for (UIOpenURLContext *c in connectionOptions.URLContexts) [self abrir:c.URL];
 }
 - (void)abrir:(NSURL *)url {
+    if (nv_tvos_abrir_link(url)) return;   // NvTopShelf.m: dexlegacy://titulo/<imdb>
     id<UIApplicationDelegate> d = [self appDelegate];
     if ([d respondsToSelector:@selector(application:openURL:options:)])
         [d application:UIApplication.sharedApplication openURL:url options:@{}];

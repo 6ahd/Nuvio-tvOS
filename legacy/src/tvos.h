@@ -17,6 +17,9 @@ void nvp_trailer(int sim);
 // O que o proximo nvp_abrir toca (player.c), para o "Tocando agora" do sistema:
 // Central de Controle, o controle do iPhone e o cartao de informacoes da TV.
 void nvp_info(const char *titulo, const char *subtitulo, const char *arte);
+// A fileira Continuar assistindo para o Top Shelf (NvTopShelf.m): linhas com
+// campos separados por TAB, ver catalogo.c. So grava quando muda.
+void nv_tvos_topshelf(const char *texto);
 
 // Teclado do sistema (NvTexto.m): abre com o texto atual; o texto inteiro e o
 // fim voltam por texto_sistema_ponte_valor / texto_sistema_ponte_fim.

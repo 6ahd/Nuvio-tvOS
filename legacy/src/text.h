@@ -223,6 +223,23 @@ typedef enum {
   TXT_FAMILIA_ROBOTO,
   TXT_FAMILIA_ATKINSON,
   TXT_FAMILIA_JETBRAINS,
+  // Arabe de verdade (OFL), para legenda e interface: formas de apresentacao
+  // completas (bidi.c molda por elas). Noto Naskh nao tem latim: o latim da
+  // linha sai da Inter, como em toda reserva.
+  TXT_FAMILIA_PLEX_ARABE,
+  TXT_FAMILIA_NASKH,
+#ifdef NV_FONTES_EXTRA
+  // Apple TV, build com fonts-extra/ (as fontes do Dex Hub, fora do git):
+  // tvos/prepare.sh copia os arquivos e define NV_FONTES_EXTRA.
+  TXT_FAMILIA_INTER_ARABE,
+  TXT_FAMILIA_JAZEERA,
+  TXT_FAMILIA_MOHAND,
+  TXT_FAMILIA_HACEN,
+  TXT_FAMILIA_MONADI,
+  TXT_FAMILIA_TONOS,
+  TXT_FAMILIA_SF_ARABE,
+  TXT_FAMILIA_EMBER,
+#endif
   TXT_FAMILIA_N
 } TxtFamilia;
 

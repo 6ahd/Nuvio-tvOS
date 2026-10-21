@@ -452,7 +452,10 @@ static int legendaAtiva(void) {
 static int modo;
 // Coluna dentro da folha de LEGENDA: 0 = lista, 1 = estilo.
 #define FX_COL_ESTILO 2
-#define FX_N_ESTILO   11
+#define FX_N_ESTILO   12
+// A lista de fontes: 2 colunas com as 7 do app; com as arabes (e as do Dex Hub
+// no Apple TV) 3 colunas, para caber na mesma altura da grade.
+#define EST_FONTE_COLS (TXT_FAMILIA_N > 8 ? 3 : 2)
 static int ctl = -1;       // ESTILO: item cujo controle esta aberto (-1 = a grade)
 
 static int nLinhas(int col);
@@ -578,11 +581,39 @@ static int nLinhas(int col) {
 // Oito linhas "rotulo: valor". OK cicla o valor e aplica NA HORA — as
 // personalizacoes abaixo usam somente metodos presentes no firmware. A ultima
 // linha restaura o conjunto inteiro sem exigir dezenas de toques no controle.
-enum { EST_FONTE = 1, EST_COR = 2, EST_RESTAURAR = 9, EST_COR_BORDA = 10 };
+enum { EST_FONTE = 1, EST_COR = 2, EST_RESTAURAR = 9, EST_COR_BORDA = 10, EST_VISUAL = 11 };
 static const char *const EST_ROT[FX_N_ESTILO] = {
   "Tamanho", "Fonte OpenSubtitles", "Cor", "Opacidade", "Fundo", "Posição", "Borda", "Atraso",
-  "Negrito", "Restaurar padrão", "Cor da borda"
+  "Negrito", "Restaurar padrão", "Cor da borda", "Visual pronto"
 };
+
+// VISUAIS PRONTOS (o "Dex Hub / Cinema / Caixa / Grande" do Dex Hub no Kodi):
+// um OK aplica fonte, tamanho, cor, fundo, borda e negrito de uma vez. Posicao,
+// atraso e opacidade sao da pessoa e ficam como estao.
+typedef struct { const char *nome; int tamanho, cor, fundo, borda, negrito, corBorda, familia; } EstVisual;
+#ifdef NV_FONTES_EXTRA
+#define EST_VIS_FONTE  TXT_FAMILIA_INTER_ARABE
+#define EST_VIS_CINEMA TXT_FAMILIA_JAZEERA
+#else
+#define EST_VIS_FONTE  TXT_FAMILIA_PLEX_ARABE
+#define EST_VIS_CINEMA TXT_FAMILIA_PLEX_ARABE
+#endif
+static const EstVisual EST_VISUAIS[] = {
+  //  nome      tam cor fundo borda neg corBorda familia
+  { "Dex Hub",  130, 0,  0,    1,    1,  -1, EST_VIS_FONTE  },  // branco, contorno firme
+  { "Cinema",   125, 1,  0,    2,    0,  -1, EST_VIS_CINEMA },  // amarelo com sombra
+  { "Caixa",    120, 0,  3,    0,    0,  -1, EST_VIS_FONTE  },  // caixa escura 75%
+  { "Grande",   160, 0,  0,    1,    1,  -1, EST_VIS_FONTE  },  // para longe da TV
+};
+#define EST_N_VISUAIS ((int)(sizeof EST_VISUAIS / sizeof *EST_VISUAIS))
+static int estVisualAtual(const VideoLegendaEstilo *e) {
+  for (int v = 0; v < EST_N_VISUAIS; v++) {
+    const EstVisual *s = &EST_VISUAIS[v];
+    if (e->tamanho == s->tamanho && e->cor == s->cor && e->fundo == s->fundo &&
+        e->borda == s->borda && e->negrito == s->negrito && e->familia == s->familia) return v;
+  }
+  return -1;
+}
 static const char *const EST_FUNDO[5] = { "Nenhum", "Escuro 25%", "Escuro 50%",
                                           "Escuro 75%", "Escuro 100%" };
 static const char *const EST_BORDA[3] = { "Nenhuma", "Contorno", "Sombra" };
@@ -639,6 +670,10 @@ static void valorEstilo(int linha, char *dst, size_t tam) {
     // Negrito vale para o que o app desenha (OpenSubtitles e legenda externa);
     // a faixa que o player da TV desenha segue o peso do aparelho.
     case 8: snprintf(dst, tam, "%s", i18n(e->negrito ? "Ligado" : "Desligado")); break;
+    case EST_VISUAL: {
+      int v = estVisualAtual(e);
+      snprintf(dst, tam, "%s", v >= 0 ? i18n(EST_VISUAIS[v].nome) : i18n("Personalizado"));
+      break; }
     case EST_COR_BORDA: {
       int c = e->corBorda >= 0 && e->corBorda < VIDEO_LEG_NCORES ? e->corBorda : 0;
       snprintf(dst, tam, "%s", VIDEO_LEG_CORES_PT[c ? c - 1 : VIDEO_LEG_NCORES - 1]);
@@ -656,6 +691,13 @@ static void ciclarEstilo(int linha) {
     case 4: e->fundo   = (e->fundo + 1) % 5; player_leg_estilo_tocou(PLR_LEG_FUNDO); break;
     case 6: e->borda   = (e->borda + 1) % 3; player_leg_estilo_tocou(PLR_LEG_BORDA); break;
     case 8: e->negrito = !e->negrito; player_leg_estilo_tocou(PLR_LEG_NEGRITO); break;
+    case EST_VISUAL: {
+      const EstVisual *s = &EST_VISUAIS[(estVisualAtual(e) + 1) % EST_N_VISUAIS];
+      e->tamanho = s->tamanho; e->cor = s->cor; e->fundo = s->fundo; e->borda = s->borda;
+      e->negrito = s->negrito; e->corBorda = s->corBorda; e->familia = s->familia;
+      player_leg_estilo_tocou(PLR_LEG_COR | PLR_LEG_FONTE | PLR_LEG_COR_BORDA | PLR_LEG_BORDA |
+                              PLR_LEG_FUNDO | PLR_LEG_NEGRITO);
+      break; }
     case EST_RESTAURAR:
       *e = (VideoLegendaEstilo){ 120, 0, 0, 3, 1, 0, 0, TXT_FAMILIA_INTER };
       // Restaurar e voltar ao normal do app, e o normal e respeitar o arquivo.
@@ -1168,8 +1210,8 @@ static int estiloTecla(SDL_Keycode k, int rep) {
     if (ok) { if (t > 1) estEscolher(ctlSub); ctl = -1; return 1; }
     if (t == 1) { if (dx) estPasso(ctl, dx, rep); }
     else if (t == 2) { if (dx) estEscolher((ctlSub + dx + VIDEO_LEG_NCORES) % VIDEO_LEG_NCORES); }
-    else {   // fontes: 2 colunas
-      int n = ctlSub + dx + dy * 2;
+    else {   // fontes: EST_FONTE_COLS colunas
+      int n = ctlSub + dx + dy * EST_FONTE_COLS;
       if (n >= 0 && n < TXT_FAMILIA_N) estEscolher(n);
     }
     return 1;
@@ -1901,7 +1943,7 @@ static void celulaEstilo(int i, GfxRect r, float a, int ativa) {
 static float estiloGradeH(void) {
   float h = IL_EST_CEL_H * IL_EST_FILEIRAS + 6.0f * (IL_EST_FILEIRAS - 1);
   if (telefoneui_ativo() && (ctl == EST_FONTE || (ctlVis == EST_FONTE && ctlAnim > .005f))) {
-    int rows = (TXT_FAMILIA_N + 1) / 2;
+    int rows = (TXT_FAMILIA_N + EST_FONTE_COLS - 1) / EST_FONTE_COLS;
     float fontes = estiloToqueMin() * rows + 8.0f * (rows - 1);
     if (fontes > h) h = fontes;
   }
@@ -2012,16 +2054,16 @@ static void paletaCtl(GfxRect r, float a, int ativo) {
 // A LISTA de fontes: cada nome escrito NA PROPRIA fonte, 2 colunas, no lugar da
 // grade (mesma altura). A em uso leva o check no acento; o foco, a superficie.
 static void fontesCtl(GfxRect r, float a, int ativo) {
-  int rows = (TXT_FAMILIA_N + 1) / 2;
-  float vao = 8.0f, cw = (r.w - vao) * 0.5f, ch = (r.h - vao * (rows - 1)) / rows, ar, ag, ab;
+  int cols = EST_FONTE_COLS, rows = (TXT_FAMILIA_N + cols - 1) / cols;
+  float vao = 8.0f, cw = (r.w - vao * (cols - 1)) / cols, ch = (r.h - vao * (rows - 1)) / rows, ar, ag, ab;
   int i;
   ajustes_acento_marca(&ar, &ag, &ab);
   for (i = 0; i < TXT_FAMILIA_N; i++) {
-    GfxRect c = { r.x + (i % 2) * (cw + vao), r.y + (i / 2) * (ch + vao), cw, ch };
+    GfxRect c = { r.x + (i % cols) * (cw + vao), r.y + (i / cols) * (ch + vao), cw, ch };
     float ai = a * anim_clamp(ctlAnim * 1.7f - (float)i * 0.12f, 0.0f, 1.0f);
     int em = i == player_leg_estilo()->familia, sel = i == ctlSub;
     float tw = cw - 40.0f - 34.0f;
-    TxtLinha n = txt_linha_corta_familia(TXT_G30B, TXT_FAMILIAS_PT[i], 243, 242, 239, sel ? 255 : 220, tw, (TxtFamilia)i);
+    TxtLinha n = txt_linha_corta_familia(rows > 4 ? TXT_G26B : TXT_G30B, TXT_FAMILIAS_PT[i], 243, 242, 239, sel ? 255 : 220, tw, (TxtFamilia)i);
     if (sel) plrui_linha_foco(c, 22.0f, ai); else fundoCtl(c, ai);
     txt_desenhar_alpha(n, c.x + 22.0f, c.y + (c.h - (float)n.h) * 0.5f, ai);
     if (em) gfx_icone((GfxRect){ c.x + c.w - 22.0f - 26.0f, c.y + (c.h - 26.0f) * 0.5f, 26.0f, 26.0f }, "pl_check", ar, ag, ab, ai);

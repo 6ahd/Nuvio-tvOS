@@ -19,7 +19,7 @@ index 89e4806..a570a73 100644
  
  #ifdef AJUSTES_TESTE
 diff --git a/src/ajustes.c b/src/ajustes.c
-index 3f54756..0e6f29b 100644
+index 3f54756..a329627 100644
 --- a/src/ajustes.c
 +++ b/src/ajustes.c
 @@ -650,6 +650,9 @@ typedef enum {
@@ -40,7 +40,39 @@ index 3f54756..0e6f29b 100644
  // F07: the order is cacheboost_cache_mb's (0, 256, 512, 1024 MB).
  // #338: indice -> MiB em cacheboost_buffer_mb (0 = o de sempre).
  // Os apps instalados vem depois destes tres (ppNome).
-@@ -1754,6 +1758,9 @@ static const Opcao OPCOES[AJ_N] = {
+@@ -964,7 +968,13 @@ static const char *V_ANIM[]      = { "Completas", "Reduzidas" };
+ static const char *V_FONTE_UI[]  = { "Inter", "LG Display", "Droid Sans",
+                                      "Montserrat", "Roboto",
+                                      "Atkinson Hyperlegible Next",
+-                                     "JetBrains Sans" };
++                                     "JetBrains Sans",
++                                     "IBM Plex Sans Arabic", "Noto Naskh Arabic",
++#ifdef NV_FONTES_EXTRA
++                                     "Inter Arabic", "Al Jazeera", "Mohand", "Hacen Promoter",
++                                     "Monadi", "Tonos", "SF Arabic", "Amazon Ember",
++#endif
++                                   };
+ // A ORDEM IMPORTA: o indice 0 e o padrao (ver a lista de padroes, que e
+ // posicional), e o padrao tem de ser 1080p. Numa TV que NAO concede a
+ // superficie 4K a escolha nao faz nada, e numa que concede ela quadruplica o
+@@ -983,7 +993,15 @@ static const char *V_LEG_FUNDO[] = { "Nenhum", "Escuro 25%", "Escuro 50%", "Escu
+ static const char *V_LEG_BORDA[] = { "Nenhuma", "Contorno", "Sombra" };
+ static const char *V_LEG_OPAC[] = { "100%", "75%", "50%", "25%" };
+ static const char *V_LEG_POS[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
+-static const char *V_LEG2_FONTE[] = { "Igual à principal", "Inter", "LG Display", "Droid Sans", "Montserrat", "Roboto", "Atkinson Hyperlegible Next", "JetBrains Sans" };
++static const char *V_LEG2_FONTE[] = { "Igual à principal", "Inter", "LG Display", "Droid Sans", "Montserrat", "Roboto", "Atkinson Hyperlegible Next", "JetBrains Sans",
++                                      "IBM Plex Sans Arabic", "Noto Naskh Arabic",
++#ifdef NV_FONTES_EXTRA
++                                      "Inter Arabic", "Al Jazeera", "Mohand", "Hacen Promoter",
++                                      "Monadi", "Tonos", "SF Arabic", "Amazon Ember",
++#endif
++                                    };
++_Static_assert(sizeof V_LEG2_FONTE / sizeof *V_LEG2_FONTE == TXT_FAMILIA_N + 1,
++               "The second subtitle line lists every family after 'same as main'");
+ static const char *V_LEG2_OPAC[] = { "Igual à principal", "100%", "75%", "50%", "25%" };
+ static const char *V_LEG2_COR_BORDA[] = { "Igual à principal", "Preto", "Branco", "Amarelo", "Verde", "Azul", "Vermelho" };
+ static const char *V_LEG2_NEGRITO[] = { "Igual à principal", "Ligado", "Desligado" };
+@@ -1754,6 +1772,9 @@ static const Opcao OPCOES[AJ_N] = {
    ESC("Cor da borda", V_LEG2_COR_BORDA, VIDEO_LEG_NCORES + 1),
    ACAO("Restaurar padrão"),
    ESC("Exibição padrão das coleções", V_COLECAO_EXIBICAO, VT_LAY_N),
@@ -50,7 +82,7 @@ index 3f54756..0e6f29b 100644
    ESC("Player", V_PLAYER_EXTERNO, 3),                    // local: playerExternoLocal
    ESC("Áudio do trailer", V_TRAUD, 2),   // n real em nValores
    ESC("Player para anime", V_PLAYER_EXTERNO, 3),        // n real em nValores; local: playerExternoAnimeLocal
-@@ -2095,6 +2102,9 @@ static const char *CHAVE[] = {
+@@ -2095,6 +2116,9 @@ static const char *CHAVE[] = {
    "legenda2FonteLocal", "legenda2OpacidadeLocal", "legenda2PosicaoLocal", "legenda2AtrasoLocal",
    "legenda2NegritoLocal", "legenda2CorBordaLocal", "-legenda2Restaurar",
    "colecaoExibicaoPadraoLocal",
@@ -60,7 +92,7 @@ index 3f54756..0e6f29b 100644
    "playerExternoLocal",
    "trailerAudioLocal",
    "playerExternoAnimeLocal",
-@@ -3005,6 +3015,9 @@ static int ajOpcaoDisponivel(int op) {
+@@ -3005,6 +3029,9 @@ static int ajOpcaoDisponivel(int op) {
  #endif
  #ifndef NV_TOUCH_UI
    if (op == AJ_INTERFACE_MODO) return 0;
@@ -70,7 +102,7 @@ index 3f54756..0e6f29b 100644
  #endif
    return op != AJ_LAYOUT_AJUSTES || ajLayoutSelecionavel();
  }
-@@ -3034,6 +3047,28 @@ void ajustes_definir_estat_lado(int esquerda) {
+@@ -3034,6 +3061,28 @@ void ajustes_definir_estat_lado(int esquerda) {
    valor[AJ_ESTAT_LADO] = v;
    AJ_COM_ORIGEM(AJLOG_CENTRAL, gravar());
  }
@@ -99,7 +131,7 @@ index 3f54756..0e6f29b 100644
  // #205: PLAYER EXTERNO ESCOLHIDO. "Player" (filmes e series) e "Player para
  // anime" valem: 0 Interno, 1 Externo (seletor do sistema), 2 Perguntar sempre,
  // 3+i o app i da lista dos instalados. No anime o 0 e "Igual ao Player" e o resto
-@@ -3636,7 +3671,15 @@ int ajustes_dts_tpk_modo(void) {
+@@ -3636,7 +3685,15 @@ int ajustes_dts_tpk_modo(void) {
  }
  int ajustes_dv_mkv(void)              { return lig(AJ_DV_MKV); }
  int ajustes_hist_conta(void)          { return lig(AJ_HIST_CONTA); }
@@ -116,7 +148,7 @@ index 3f54756..0e6f29b 100644
  int ajustes_amigos_estilo(void)       { return valor[AJ_AMIGOS_ESTILO]; }
  // Espaco da Home em fracao do valor medido. Fora da faixa do NUM (arquivo torto)
  // volta para dentro dela; 0 (arquivo sem a chave) nao chega aqui: o padrao e 100.
-@@ -5879,6 +5922,9 @@ static int somenteDesteAparelho(int op) {
+@@ -5879,6 +5936,9 @@ static int somenteDesteAparelho(int op) {
      case AJ_INTERFACE_MODO: /* TV/Mobile follows this device, never the account */
      case AJ_MENU_TOPO:      /* #461: o web nao tem; por perfil (perfilLocal) */
      case AJ_ABAS_ESTILO:    /* #205: idem */
@@ -126,7 +158,7 @@ index 3f54756..0e6f29b 100644
      case AJ_LOGO_TRAILER:   /* so a protecao de OLED desta TV */
      case AJ_LEG_MOSTRAR:
      case AJ_HDR_INTERFACE: /* HDR output belongs to this panel. */
-@@ -6294,6 +6340,9 @@ static int foraDestaPlataforma(int op) {
+@@ -6294,6 +6354,9 @@ static int foraDestaPlataforma(int op) {
  #ifndef NV_TOUCH_UI
    if (op == AJ_INTERFACE_MODO) return 1;
  #endif
@@ -136,7 +168,7 @@ index 3f54756..0e6f29b 100644
  #ifndef NV_ANDROID
    if (op == AJ_PLAYER_EXTERNO || op == AJ_PLAYER_ANIME) return 1;   // #501: so ha outro player no Android
  #endif
-@@ -7489,6 +7538,9 @@ static const char *ajudaOpcaoBase(int op) {
+@@ -7489,6 +7552,9 @@ static const char *ajudaOpcaoBase(int op) {
      case AJ_FONTE_UI: return "Altera a tipografia dos menus. A fonte das legendas é escolhida separadamente no player.";
      case AJ_HERO_SINOPSE_TAM: return "Aumenta apenas as sinopses. Na página do título, abra Mais opções › Ler sinopse para ler o texto completo.";
      case AJ_TAMANHO_UI: return "Aumenta os controles do player, os painéis e os avisos. Os Ajustes têm um tamanho próprio.";
@@ -146,7 +178,7 @@ index 3f54756..0e6f29b 100644
      case AJ_INTERFACE_MODO: return "Automático usa TV em aparelhos Android TV e Mobile nos demais aparelhos. TV mantém a interface do controle remoto; Mobile usa toque em retrato ou paisagem. A escolha fica salva só neste aparelho.";
      case AJ_TAMANHO_AJUSTES: return i18n("Muda só o tamanho dos Ajustes nesta TV. O padrão é 100%.");
      case AJ_NT_ORDEM: return "Esquerda e direita escolhem subir ou descer; OK move.";
-@@ -10210,7 +10262,7 @@ static AjPreview familiaPreviaOpcao(int op) {
+@@ -10210,7 +10276,7 @@ static AjPreview familiaPreviaOpcao(int op) {
    switch (op) {
      case AJ_LEG_CONTORNO_COR:
      case AJ_LEG2_POS: case AJ_LEG2_TAMANHO: case AJ_LEG2_COR: case AJ_LEG2_FUNDO: case AJ_LEG2_BORDA:
@@ -155,7 +187,7 @@ index 3f54756..0e6f29b 100644
      case AJ_DV_MKV:
      case AJ_LEG_FORCADA:
      case AJ_AUD_LINGUA: case AJ_AUD_LINGUA2: case AJ_PAUSA_OVERLAY: case AJ_PLR_CLASSIF: case AJ_TELA_ABERTURA: case AJ_ABERTURA_ADDON: case AJ_ABERTURA_FUNDO: case AJ_ABERTURA_ESTILO: case AJ_FONTE_MANUAL:
-@@ -10337,6 +10389,12 @@ void ajustes_desenhar(Uint32 agora) {
+@@ -10337,6 +10403,12 @@ void ajustes_desenhar(Uint32 agora) {
  #endif
    AJ_ESCALA_INI();
    ajDesenharTudo(agora);
@@ -168,6 +200,15 @@ index 3f54756..0e6f29b 100644
    AJ_ESCALA_FIM();
  }
  static void ajDesenharTudo(Uint32 agora) {
+@@ -10721,7 +10793,7 @@ int ajustes_teste_quadro(const char *id) {
+ void ajustes_teste_arte(int n) { ajArteFundoN = n; }
+ 
+ void ajustes_teste_fonte_interface(int familia) {
+-  if (familia < TXT_FAMILIA_INTER || familia > TXT_FAMILIA_JETBRAINS) return;
++  if (familia < TXT_FAMILIA_INTER || familia >= TXT_FAMILIA_N) return;
+   valor[AJ_FONTE_UI] = familia;
+   txt_definir_fonte_interface((TxtFamilia)familia);
+ }
 diff --git a/src/ajustes.h b/src/ajustes.h
 index 9c25ab5..d038198 100644
 --- a/src/ajustes.h
@@ -404,6 +445,59 @@ index 0fe9c07..6a5b36d 100644
  #ifdef NV_TOUCH_UI
    if (buTelefone()) ponteiro_rolagem(toqueBuscaRolar);
  #endif
+diff --git a/src/catalogo.c b/src/catalogo.c
+index 4b2a12c..b24519a 100644
+--- a/src/catalogo.c
++++ b/src/catalogo.c
+@@ -20,6 +20,9 @@ __attribute__((weak)) int arte_reserva_registrar(const char *url, const char *im
+ #include "sessao.h"
+ #include "perfis.h"
+ #include "perfisessao.h"
++#ifdef NV_TVOS
++#include "tvos.h"
++#endif
+ #include <pthread.h>
+ #include <stdio.h>
+ #include <sys/stat.h>
+@@ -2474,7 +2477,38 @@ void cat_definir_tudo(const CatItem *lista, int qtd,
+ //
+ // Roda sob pubTrava: a descoberta pode estar trocando o catalogo neste mesmo
+ // instante, e duas trocas simultaneas liberariam o mesmo bloco duas vezes.
++#ifdef NV_TVOS
++// TOP SHELF (Apple TV): a fileira Continuar assistindo vai tambem para a
++// prateleira acima dos icones da tela inicial. Uma linha por titulo, campos
++// separados por TAB (tvos/TopShelf/ContentProvider.swift le na mesma ordem):
++//   imdb  tipo  temporada  episodio  progresso  titulo  subtitulo  imagem
++static void limparCampo(char *s) { for (; *s; s++) if (*s == '\t' || *s == '\n' || *s == '\r') *s = ' '; }
++static void topShelfPublicar(const CatItem *lista, int qtd) {
++  char texto[12 * 1400];   // na pilha: a descoberta chama de mais de um fio
++  size_t k = 0;
++  for (int i = 0; i < qtd && i < 12; i++) {
++    const CatItem *c = &lista[i];
++    char titulo[160], sub[48] = "", arte[512];
++    int w;
++    if (!c->imdb[0] || !c->titulo[0]) continue;
++    snprintf(titulo, sizeof titulo, "%s", c->titulo);
++    if (c->temporada > 0 && c->episodio > 0) snprintf(sub, sizeof sub, "S%d:E%d", c->temporada, c->episodio);
++    snprintf(arte, sizeof arte, "%s", c->backdrop[0] ? c->backdrop : c->poster);
++    limparCampo(titulo); limparCampo(arte);
++    w = snprintf(texto + k, sizeof texto - k, "%s\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n",
++                 c->imdb, c->tipo, c->temporada, c->episodio, c->progresso, titulo, sub, arte);
++    if (w < 0 || (size_t)w >= sizeof texto - k) break;
++    k += (size_t)w;
++  }
++  texto[k] = 0;
++  nv_tvos_topshelf(texto);
++}
++#endif
++
+ void cat_trocar_continuar(const CatItem *lista, int qtd) {
++#ifdef NV_TVOS
++  topShelfPublicar(lista, qtd < 0 ? 0 : qtd);
++#endif
+   // static (40 KB): so e usado depois de pubTrava, que serializa as chamadas.
+   static CatFileira novas[CAT_FIL_MAX];
+   CatItem *novo;
 diff --git a/src/ctxmenu.c b/src/ctxmenu.c
 index 4df9bae..745379f 100644
 --- a/src/ctxmenu.c
@@ -568,7 +662,7 @@ index b1f288e..f8f215b 100644
    char cmd[160];
    snprintf(cmd, sizeof cmd, "open '%s'", url);
 diff --git a/src/faixas.c b/src/faixas.c
-index 3521e73..d6a66cd 100644
+index 3521e73..174c9f3 100644
 --- a/src/faixas.c
 +++ b/src/faixas.c
 @@ -150,7 +150,7 @@ static int ehAss(const VideoFaixa *f) {
@@ -580,6 +674,126 @@ index 3521e73..d6a66cd 100644
  #define FX_TEXTO_OVERLAY 0
  #else
  #define FX_TEXTO_OVERLAY 1
+@@ -452,7 +452,10 @@ static int legendaAtiva(void) {
+ static int modo;
+ // Coluna dentro da folha de LEGENDA: 0 = lista, 1 = estilo.
+ #define FX_COL_ESTILO 2
+-#define FX_N_ESTILO   11
++#define FX_N_ESTILO   12
++// A lista de fontes: 2 colunas com as 7 do app; com as arabes (e as do Dex Hub
++// no Apple TV) 3 colunas, para caber na mesma altura da grade.
++#define EST_FONTE_COLS (TXT_FAMILIA_N > 8 ? 3 : 2)
+ static int ctl = -1;       // ESTILO: item cujo controle esta aberto (-1 = a grade)
+ 
+ static int nLinhas(int col);
+@@ -578,11 +581,39 @@ static int nLinhas(int col) {
+ // Oito linhas "rotulo: valor". OK cicla o valor e aplica NA HORA — as
+ // personalizacoes abaixo usam somente metodos presentes no firmware. A ultima
+ // linha restaura o conjunto inteiro sem exigir dezenas de toques no controle.
+-enum { EST_FONTE = 1, EST_COR = 2, EST_RESTAURAR = 9, EST_COR_BORDA = 10 };
++enum { EST_FONTE = 1, EST_COR = 2, EST_RESTAURAR = 9, EST_COR_BORDA = 10, EST_VISUAL = 11 };
+ static const char *const EST_ROT[FX_N_ESTILO] = {
+   "Tamanho", "Fonte OpenSubtitles", "Cor", "Opacidade", "Fundo", "Posição", "Borda", "Atraso",
+-  "Negrito", "Restaurar padrão", "Cor da borda"
++  "Negrito", "Restaurar padrão", "Cor da borda", "Visual pronto"
++};
++
++// VISUAIS PRONTOS (o "Dex Hub / Cinema / Caixa / Grande" do Dex Hub no Kodi):
++// um OK aplica fonte, tamanho, cor, fundo, borda e negrito de uma vez. Posicao,
++// atraso e opacidade sao da pessoa e ficam como estao.
++typedef struct { const char *nome; int tamanho, cor, fundo, borda, negrito, corBorda, familia; } EstVisual;
++#ifdef NV_FONTES_EXTRA
++#define EST_VIS_FONTE  TXT_FAMILIA_INTER_ARABE
++#define EST_VIS_CINEMA TXT_FAMILIA_JAZEERA
++#else
++#define EST_VIS_FONTE  TXT_FAMILIA_PLEX_ARABE
++#define EST_VIS_CINEMA TXT_FAMILIA_PLEX_ARABE
++#endif
++static const EstVisual EST_VISUAIS[] = {
++  //  nome      tam cor fundo borda neg corBorda familia
++  { "Dex Hub",  130, 0,  0,    1,    1,  -1, EST_VIS_FONTE  },  // branco, contorno firme
++  { "Cinema",   125, 1,  0,    2,    0,  -1, EST_VIS_CINEMA },  // amarelo com sombra
++  { "Caixa",    120, 0,  3,    0,    0,  -1, EST_VIS_FONTE  },  // caixa escura 75%
++  { "Grande",   160, 0,  0,    1,    1,  -1, EST_VIS_FONTE  },  // para longe da TV
+ };
++#define EST_N_VISUAIS ((int)(sizeof EST_VISUAIS / sizeof *EST_VISUAIS))
++static int estVisualAtual(const VideoLegendaEstilo *e) {
++  for (int v = 0; v < EST_N_VISUAIS; v++) {
++    const EstVisual *s = &EST_VISUAIS[v];
++    if (e->tamanho == s->tamanho && e->cor == s->cor && e->fundo == s->fundo &&
++        e->borda == s->borda && e->negrito == s->negrito && e->familia == s->familia) return v;
++  }
++  return -1;
++}
+ static const char *const EST_FUNDO[5] = { "Nenhum", "Escuro 25%", "Escuro 50%",
+                                           "Escuro 75%", "Escuro 100%" };
+ static const char *const EST_BORDA[3] = { "Nenhuma", "Contorno", "Sombra" };
+@@ -639,6 +670,10 @@ static void valorEstilo(int linha, char *dst, size_t tam) {
+     // Negrito vale para o que o app desenha (OpenSubtitles e legenda externa);
+     // a faixa que o player da TV desenha segue o peso do aparelho.
+     case 8: snprintf(dst, tam, "%s", i18n(e->negrito ? "Ligado" : "Desligado")); break;
++    case EST_VISUAL: {
++      int v = estVisualAtual(e);
++      snprintf(dst, tam, "%s", v >= 0 ? i18n(EST_VISUAIS[v].nome) : i18n("Personalizado"));
++      break; }
+     case EST_COR_BORDA: {
+       int c = e->corBorda >= 0 && e->corBorda < VIDEO_LEG_NCORES ? e->corBorda : 0;
+       snprintf(dst, tam, "%s", VIDEO_LEG_CORES_PT[c ? c - 1 : VIDEO_LEG_NCORES - 1]);
+@@ -656,6 +691,13 @@ static void ciclarEstilo(int linha) {
+     case 4: e->fundo   = (e->fundo + 1) % 5; player_leg_estilo_tocou(PLR_LEG_FUNDO); break;
+     case 6: e->borda   = (e->borda + 1) % 3; player_leg_estilo_tocou(PLR_LEG_BORDA); break;
+     case 8: e->negrito = !e->negrito; player_leg_estilo_tocou(PLR_LEG_NEGRITO); break;
++    case EST_VISUAL: {
++      const EstVisual *s = &EST_VISUAIS[(estVisualAtual(e) + 1) % EST_N_VISUAIS];
++      e->tamanho = s->tamanho; e->cor = s->cor; e->fundo = s->fundo; e->borda = s->borda;
++      e->negrito = s->negrito; e->corBorda = s->corBorda; e->familia = s->familia;
++      player_leg_estilo_tocou(PLR_LEG_COR | PLR_LEG_FONTE | PLR_LEG_COR_BORDA | PLR_LEG_BORDA |
++                              PLR_LEG_FUNDO | PLR_LEG_NEGRITO);
++      break; }
+     case EST_RESTAURAR:
+       *e = (VideoLegendaEstilo){ 120, 0, 0, 3, 1, 0, 0, TXT_FAMILIA_INTER };
+       // Restaurar e voltar ao normal do app, e o normal e respeitar o arquivo.
+@@ -1168,8 +1210,8 @@ static int estiloTecla(SDL_Keycode k, int rep) {
+     if (ok) { if (t > 1) estEscolher(ctlSub); ctl = -1; return 1; }
+     if (t == 1) { if (dx) estPasso(ctl, dx, rep); }
+     else if (t == 2) { if (dx) estEscolher((ctlSub + dx + VIDEO_LEG_NCORES) % VIDEO_LEG_NCORES); }
+-    else {   // fontes: 2 colunas
+-      int n = ctlSub + dx + dy * 2;
++    else {   // fontes: EST_FONTE_COLS colunas
++      int n = ctlSub + dx + dy * EST_FONTE_COLS;
+       if (n >= 0 && n < TXT_FAMILIA_N) estEscolher(n);
+     }
+     return 1;
+@@ -1901,7 +1943,7 @@ static void celulaEstilo(int i, GfxRect r, float a, int ativa) {
+ static float estiloGradeH(void) {
+   float h = IL_EST_CEL_H * IL_EST_FILEIRAS + 6.0f * (IL_EST_FILEIRAS - 1);
+   if (telefoneui_ativo() && (ctl == EST_FONTE || (ctlVis == EST_FONTE && ctlAnim > .005f))) {
+-    int rows = (TXT_FAMILIA_N + 1) / 2;
++    int rows = (TXT_FAMILIA_N + EST_FONTE_COLS - 1) / EST_FONTE_COLS;
+     float fontes = estiloToqueMin() * rows + 8.0f * (rows - 1);
+     if (fontes > h) h = fontes;
+   }
+@@ -2012,16 +2054,16 @@ static void paletaCtl(GfxRect r, float a, int ativo) {
+ // A LISTA de fontes: cada nome escrito NA PROPRIA fonte, 2 colunas, no lugar da
+ // grade (mesma altura). A em uso leva o check no acento; o foco, a superficie.
+ static void fontesCtl(GfxRect r, float a, int ativo) {
+-  int rows = (TXT_FAMILIA_N + 1) / 2;
+-  float vao = 8.0f, cw = (r.w - vao) * 0.5f, ch = (r.h - vao * (rows - 1)) / rows, ar, ag, ab;
++  int cols = EST_FONTE_COLS, rows = (TXT_FAMILIA_N + cols - 1) / cols;
++  float vao = 8.0f, cw = (r.w - vao * (cols - 1)) / cols, ch = (r.h - vao * (rows - 1)) / rows, ar, ag, ab;
+   int i;
+   ajustes_acento_marca(&ar, &ag, &ab);
+   for (i = 0; i < TXT_FAMILIA_N; i++) {
+-    GfxRect c = { r.x + (i % 2) * (cw + vao), r.y + (i / 2) * (ch + vao), cw, ch };
++    GfxRect c = { r.x + (i % cols) * (cw + vao), r.y + (i / cols) * (ch + vao), cw, ch };
+     float ai = a * anim_clamp(ctlAnim * 1.7f - (float)i * 0.12f, 0.0f, 1.0f);
+     int em = i == player_leg_estilo()->familia, sel = i == ctlSub;
+     float tw = cw - 40.0f - 34.0f;
+-    TxtLinha n = txt_linha_corta_familia(TXT_G30B, TXT_FAMILIAS_PT[i], 243, 242, 239, sel ? 255 : 220, tw, (TxtFamilia)i);
++    TxtLinha n = txt_linha_corta_familia(rows > 4 ? TXT_G26B : TXT_G30B, TXT_FAMILIAS_PT[i], 243, 242, 239, sel ? 255 : 220, tw, (TxtFamilia)i);
+     if (sel) plrui_linha_foco(c, 22.0f, ai); else fundoCtl(c, ai);
+     txt_desenhar_alpha(n, c.x + 22.0f, c.y + (c.h - (float)n.h) * 0.5f, ai);
+     if (em) gfx_icone((GfxRect){ c.x + c.w - 22.0f - 26.0f, c.y + (c.h - 26.0f) * 0.5f, 26.0f, 26.0f }, "pl_check", ar, ag, ab, ai);
 diff --git a/src/gfx.c b/src/gfx.c
 index 19d789b..a94c416 100644
 --- a/src/gfx.c
@@ -942,7 +1156,7 @@ index 1b214fb..8ff9bd8 100644
    t = qrTextura();
    if (t) {
 diff --git a/src/idioma_ar.h b/src/idioma_ar.h
-index 0ef1c34..c7f6418 100644
+index 0ef1c34..21400e9 100644
 --- a/src/idioma_ar.h
 +++ b/src/idioma_ar.h
 @@ -879,6 +879,7 @@
@@ -961,7 +1175,15 @@ index 0ef1c34..c7f6418 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "ينزّل ملصق فيلم معروف بالإعدادات الحالية ويُظهر ما إذا نجح. يُبنى أول ملصق لكل عنوان على الخادم وقد يستغرق بضع ثوانٍ."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "ينزّل حتى 3 مصادر من خوادم مختلفة لمدة 8 ث لكل منها، بدءًا من منتصف الملف؛ وتُتجاهل البيانات."),
    T("Baixado na sessão", "نُزّل في هذه الجلسة"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "كل مربع حلقة؛ واللون هو التقييم."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "كل أداة جمع تصبح أصلًا إضافيًا في ورقة المصادر، تعمل إلى جانب الإضافات. حدود عامة للذاكرة والطلبات."),
+   T("Cadastrado em Ajustes › Conta", "يُضبط في الإعدادات › الحساب"),
++  T("Caixa", "صندوق"),
+   T("Campo", "حقل"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "حقول Wikidata — ليست معلومات طريفة كتبناها نحن"),
+   T("Canadá", "كندا"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "كولومبيا"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "مع %s إلى المزوّد، %s هي الدقة التي تُشغَّل دون تقطّع."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "مع HDR أو Dolby Vision، تبدو الواجهة باهتة. التلقائي يخفض الأبيض بمقدار الخُمس ويزيد سماكة الزجاج، فقط أثناء تفعيل HDR. حيث لا يبلغ المشغل عن HDR، لا يتغير شيء."),
@@ -969,7 +1191,7 @@ index 0ef1c34..c7f6418 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "عندما يبقى التلفاز خاملًا، تخفت الشاشة ويبدأ <b>شاشة التوقف</b>: العرض أو الساعة أو التعتيم فقط."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "بمفتاحك الخاص، تنطبق حدود خطة Seekr الخاصة بك؛ ولا يضع هذا التلفاز حدًا خاصًا به. ذاكرة التخزين لا تستهلك عمليات البحث."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "مع وجود ملف وبلا أسطر بعد، تكون الرسالة فقط: “لا توجد أسطر سجل بعد.”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "الإنترنت"),
    T("Internet de volta", "عاد الإنترنت"),
    T("Interno", "داخلي"),
@@ -977,7 +1199,7 @@ index 0ef1c34..c7f6418 100644
    T("Início", "الرئيسية"),
    T("Início e Amigos", "الرئيسية والأصدقاء"),
    T("Início mais leve em GPUs fracas", "رئيسية أخف على معالجات الرسوم الضعيفة"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "الترجمة والقنوات"),
    T("Legendas e notas", "الترجمة والتقييمات"),
    T("Legendas em árabe com RTL", "ترجمات عربية من اليمين إلى اليسار"),
@@ -985,7 +1207,7 @@ index 0ef1c34..c7f6418 100644
    T("Legendas no trailer", "تسميات الإعلان التوضيحية"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "الترجمة عبر الجزيرة، وAutoSync، وتقديم أفضل."),
    T("Legendas, memória e telas mais fluidas.", "الترجمة والذاكرة وشاشات أكثر سلاسة."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "المنصات"),
    T("Play tricolor", "تشغيل ثلاثي الألوان"),
    T("Player", "المشغل"),
@@ -993,8 +1215,16 @@ index 0ef1c34..c7f6418 100644
    T("Player e TV ao vivo", "المشغل والتلفاز المباشر"),
    T("Player e legendas", "المشغل والترجمة"),
    T("Player e navegação", "التشغيل والتنقل"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "مرئي"),
+   T("Visual novo", "مظهر جديد"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "مظهر جديد، وخوادم من منزلك والكثير مما أزلناه من طريقك. يستغرق نحو أربع دقائق."),
++  T("Visual pronto", "مظهر جاهز"),
+   T("Visíveis", "معروض"),
+   T("Visíveis · %d", "مرئي · %d"),
+   T("Vitrine", "العرض"),
 diff --git a/src/idioma_bg.h b/src/idioma_bg.h
-index 1fce1c2..44fc620 100644
+index 1fce1c2..7fa9403 100644
 --- a/src/idioma_bg.h
 +++ b/src/idioma_bg.h
 @@ -879,6 +879,7 @@
@@ -1013,7 +1243,15 @@ index 1fce1c2..44fc620 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Изтегля плаката на известен филм с текущите настройки и показва дали е успяло. Първият плакат на всяко заглавие се изгражда на сървъра и може да отнеме няколко секунди."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Изтегля до 3 източника от различни сървъри по 8 с, започвайки от средата на файла; данните се изхвърлят."),
    T("Baixado na sessão", "Изтеглено в тази сесия"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Всеки квадрат е епизод; цветът е оценката."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Всеки скрейпър става още един източник в листа Източници и работи заедно с добавките. Общи ограничения за паметта и заявките."),
+   T("Cadastrado em Ajustes › Conta", "Настройва се в Настройки › Акаунт"),
++  T("Caixa", "Каре"),
+   T("Campo", "Поле"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Полета от Wikidata — не факти, написани от нас"),
+   T("Canadá", "Канада"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Колумбия"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "При %s до доставчика %s е резолюцията, която върви без накъсване."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "При HDR или Dolby Vision интерфейсът изглежда избеляло. Автоматично намалява бялото с една пета и сгъстява стъклото, само при активен HDR. Където плейърът не съобщава HDR, нищо не се променя."),
@@ -1021,7 +1259,7 @@ index 1fce1c2..44fc620 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Когато телевизорът стои, екранът потъмнява и тръгва <b>скрийнсейвърът</b>: Витрина, Часовник или Само затъмняване."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "С ваш собствен ключ важат ограниченията на вашия план в Seekr; този телевизор не налага собствено ограничение. Кешът не изразходва заявки."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "С файл, но без редове, съобщението е само: „Още няма редове в дневника.“"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Интернет"),
    T("Internet de volta", "Интернетът се върна"),
    T("Interno", "Вътрешно"),
@@ -1029,7 +1267,7 @@ index 1fce1c2..44fc620 100644
    T("Início", "Начало"),
    T("Início e Amigos", "Начало и Приятели"),
    T("Início mais leve em GPUs fracas", "По-лек начален екран при слаби GPU"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Субтитри и канали"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Арабски субтитри с RTL"),
@@ -1037,7 +1275,7 @@ index 1fce1c2..44fc620 100644
    T("Legendas no trailer", "Субтитри в трейлъра"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Субтитри през острова, AutoSync, по-добро превъртане."),
    T("Legendas, memória e telas mais fluidas.", "Субтитри, памет и по-плавни екрани."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Платформи"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Плейър"),
@@ -1045,8 +1283,16 @@ index 1fce1c2..44fc620 100644
    T("Player e TV ao vivo", "Плейър и ТВ на живо"),
    T("Player e legendas", "Плеър и субтитри"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Визия"),
+   T("Visual novo", "Нова визия"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Нов вид, сървъри от дома ви и много неща, които махнахме от пътя ви. Отнема около четири минути."),
++  T("Visual pronto", "Готов стил"),
+   T("Visíveis", "Видими"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Витрина"),
 diff --git a/src/idioma_bs.h b/src/idioma_bs.h
-index 24ed599..67e2713 100644
+index 24ed599..44d4c22 100644
 --- a/src/idioma_bs.h
 +++ b/src/idioma_bs.h
 @@ -879,6 +879,7 @@
@@ -1065,7 +1311,15 @@ index 24ed599..67e2713 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Preuzima plakat poznatog filma s trenutnim postavkama i pokazuje je li uspjelo. Prvi plakat svakog naslova pravi se na serveru i može potrajati nekoliko sekundi."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Preuzima do 3 izvora s različitih servera po 8 s, počevši od sredine datoteke; podaci se odbacuju."),
    T("Baixado na sessão", "Preuzeto u ovoj sesiji"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Svaki kvadrat je jedna epizoda; boja je ocjena."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Svaki scraper postaje još jedan izvor na listu Izvori i radi uz addone. Globalna ograničenja memorije i zahtjeva."),
+   T("Cadastrado em Ajustes › Conta", "Podešava se u Postavkama › Račun"),
++  T("Caixa", "Okvir"),
+   T("Campo", "Polje"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Polja iz Wikidata — ne zanimljivosti koje smo mi napisali"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Kolumbija"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Sa %s do provajdera, %s je rezolucija koja se reprodukuje bez zastajkivanja."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Uz HDR ili Dolby Vision sučelje izgleda isprano. Automatski smanjuje bijelu za petinu i zgušnjava staklo, samo dok je HDR aktivan. Gdje player ne prijavljuje HDR, ništa se ne mijenja."),
@@ -1073,7 +1327,7 @@ index 24ed599..67e2713 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Kad TV miruje, ekran se zatamni i uključi se <b>čuvar ekrana</b>: Izlog, Sat ili Samo zatamni."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "S vlastitim ključem vrijede ograničenja vašeg Seekr paketa; ovaj TV ne postavlja vlastito ograničenje. Keš ne troši upite."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "S datotekom a bez redova poruka je samo: „Još nema redaka dnevnika.“"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet je ponovo tu"),
    T("Interno", "Interno"),
@@ -1081,7 +1335,7 @@ index 24ed599..67e2713 100644
    T("Início", "Početna"),
    T("Início e Amigos", "Početna i Prijatelji"),
    T("Início mais leve em GPUs fracas", "Lakši početni ekran na slabim GPU-ovima"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Titlovi i kanali"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arapski titlovi s RTL-om"),
@@ -1089,7 +1343,7 @@ index 24ed599..67e2713 100644
    T("Legendas no trailer", "Titlovi u traileru"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Titlovi preko ostrva, AutoSync, bolje premotavanje."),
    T("Legendas, memória e telas mais fluidas.", "Titlovi, memorija i glatkiji ekrani."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platforme"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Plejer"),
@@ -1097,8 +1351,16 @@ index 24ed599..67e2713 100644
    T("Player e TV ao vivo", "Player i TV uživo"),
    T("Player e legendas", "Plejer i titlovi"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Izgled"),
+   T("Visual novo", "Novi izgled"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Novi izgled, serveri iz vašeg doma i gomila stvari koje smo vam sklonili s puta. Traje oko četiri minute."),
++  T("Visual pronto", "Gotov stil"),
+   T("Visíveis", "Prikazane"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Izlog"),
 diff --git a/src/idioma_cs.h b/src/idioma_cs.h
-index 5826422..ba2f94a 100644
+index 5826422..6833f37 100644
 --- a/src/idioma_cs.h
 +++ b/src/idioma_cs.h
 @@ -879,6 +879,7 @@
@@ -1117,7 +1379,15 @@ index 5826422..ba2f94a 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Stáhne plakát známého filmu s aktuálním nastavením a ukáže, zda to fungovalo. První plakát každého titulu se sestavuje na serveru a může trvat několik sekund."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Stáhne až 3 zdroje z různých serverů po 8 s, počínaje uprostřed souboru; data se zahodí."),
    T("Baixado na sessão", "Staženo v této relaci"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Každý čtvereček je jedna epizoda; barva je hodnocení."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Každý scraper se stane dalším zdrojem v listu Zdroje a běží společně s doplňky. Globální limity paměti a požadavků."),
+   T("Cadastrado em Ajustes › Conta", "Nastavíte v Nastavení › Účet"),
++  T("Caixa", "Rámeček"),
+   T("Campo", "Pole"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Pole z Wikidata — ne zajímavosti napsané námi"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Kolumbie"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Při %s k poskytovateli je %s rozlišení, které hraje bez zasekávání."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "S HDR nebo Dolby Vision působí rozhraní vybledle. Automaticky sníží bílou o pětinu a zhustí sklo, jen když je HDR aktivní. Tam, kde přehrávač HDR nehlásí, se nic nemění."),
@@ -1125,7 +1395,7 @@ index 5826422..ba2f94a 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Když televize stojí, obrazovka ztmavne a spustí se <b>spořič</b>: Výloha, Hodiny nebo Jen ztmavit."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "S vlastním klíčem platí limity vašeho tarifu Seekr; tato televize nestanoví vlastní limit. Mezipaměť dotazy nespotřebovává."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Se souborem, ale bez řádků je hlášení jen: „Zatím žádné řádky logu.“"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet je zpět"),
    T("Interno", "Interní"),
@@ -1133,7 +1403,7 @@ index 5826422..ba2f94a 100644
    T("Início", "Úvodní obrazovka"),
    T("Início e Amigos", "Domů a Přátelé"),
    T("Início mais leve em GPUs fracas", "Lehčí domovská obrazovka na slabých GPU"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Titulky a kanály"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arabské titulky s RTL"),
@@ -1141,7 +1411,7 @@ index 5826422..ba2f94a 100644
    T("Legendas no trailer", "Titulky v traileru"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Titulky přes ostrov, AutoSync, lepší přetáčení."),
    T("Legendas, memória e telas mais fluidas.", "Titulky, paměť a plynulejší obrazovky."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platformy"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Přehrávač"),
@@ -1149,8 +1419,16 @@ index 5826422..ba2f94a 100644
    T("Player e TV ao vivo", "Přehrávač a živá TV"),
    T("Player e legendas", "Přehrávač a titulky"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Vzhled"),
+   T("Visual novo", "Nový vzhled"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Nový vzhled, servery z vašeho domova a spousta věcí, které jsme vám uklidili z cesty. Zabere asi čtyři minuty."),
++  T("Visual pronto", "Hotový styl"),
+   T("Visíveis", "Zobrazeny"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Výloha"),
 diff --git a/src/idioma_da.h b/src/idioma_da.h
-index 8984998..3729607 100644
+index 8984998..c3cf418 100644
 --- a/src/idioma_da.h
 +++ b/src/idioma_da.h
 @@ -879,6 +879,7 @@
@@ -1169,7 +1447,15 @@ index 8984998..3729607 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Henter plakaten til en kendt film med de nuværende indstillinger og viser, om det lykkedes. Den første plakat for hver titel bygges på serveren og kan tage nogle sekunder."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Henter op til 3 kilder fra forskellige servere i 8 s hver, startende midt i filen; dataene kasseres."),
    T("Baixado na sessão", "Hentet i sessionen"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Hver firkant er et afsnit; farven er vurderingen."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Hver scraper bliver endnu en kilde i Kilder-arket og kører sammen med addons. Globale grænser for hukommelse og forespørgsler."),
+   T("Cadastrado em Ajustes › Conta", "Oprettet i Indstillinger › Konto"),
++  T("Caixa", "Boks"),
+   T("Campo", "Felt"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata-felter — ikke fun facts skrevet af os"),
+   T("Canadá", "Canada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Colombia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Med %s til udbyderen er %s den opløsning, der spiller uden at hakke."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Med HDR eller Dolby Vision ser grænsefladen udvasket ud. Automatisk sænker det hvide med en femtedel og gør glasset tættere, kun mens HDR er aktivt. Hvor afspilleren ikke melder HDR, ændres intet."),
@@ -1177,7 +1463,7 @@ index 8984998..3729607 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Når tv'et står stille, dæmpes skærmen og <b>pauseskærmen</b> starter: Udstilling, Ur eller Kun dæmpning."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Med din egen nøgle gælder grænserne i dit Seekr-abonnement; dette tv sætter ingen egen grænse. Cachen bruger ingen forespørgsler."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Med en fil men ingen linjer endnu er beskeden bare: “Ingen loglinjer endnu.”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internettet er tilbage"),
    T("Interno", "Internt"),
@@ -1185,7 +1471,7 @@ index 8984998..3729607 100644
    T("Início", "Hjem"),
    T("Início e Amigos", "Hjem og Venner"),
    T("Início mais leve em GPUs fracas", "Lettere startside på svage GPU’er"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Undertekster og kanaler"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arabiske undertekster med RTL"),
@@ -1193,7 +1479,7 @@ index 8984998..3729607 100644
    T("Legendas no trailer", "Undertekster i traileren"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Undertekster via øen, AutoSync, bedre spoling."),
    T("Legendas, memória e telas mais fluidas.", "Undertekster, hukommelse og mere flydende skærme."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platforme"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Afspiller"),
@@ -1201,8 +1487,16 @@ index 8984998..3729607 100644
    T("Player e TV ao vivo", "Afspiller og live-tv"),
    T("Player e legendas", "Afspiller og undertekster"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Udseende"),
+   T("Visual novo", "Nyt udseende"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Nyt udseende, servere hjemmefra og masser af ting, vi har fjernet fra vejen. Tager omkring fire minutter."),
++  T("Visual pronto", "Færdig stil"),
+   T("Visíveis", "Vises"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Udstilling"),
 diff --git a/src/idioma_de.h b/src/idioma_de.h
-index 1e8c177..c0dd0e5 100644
+index 1e8c177..e91c2a8 100644
 --- a/src/idioma_de.h
 +++ b/src/idioma_de.h
 @@ -878,6 +878,7 @@
@@ -1221,7 +1515,15 @@ index 1e8c177..c0dd0e5 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Lädt das Poster eines bekannten Films mit den aktuellen Einstellungen und zeigt, ob es geklappt hat. Das erste Poster jedes Titels wird auf dem Server erzeugt und kann einige Sekunden dauern."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Lädt 8 s lang bis zu 3 Quellen von verschiedenen Servern herunter, beginnend in der Mitte der Datei; die Daten werden verworfen."),
    T("Baixado na sessão", "In dieser Sitzung heruntergeladen"),
-@@ -1287,6 +1289,7 @@
+@@ -1109,6 +1111,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Jedes Quadrat ist eine Folge; die Farbe ist die Bewertung."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Jeder Scraper wird zu einer weiteren Quelle im Quellenblatt und läuft neben den Addons. Globale Limits für Speicher und Anfragen."),
+   T("Cadastrado em Ajustes › Conta", "Eingerichtet unter Einstellungen › Konto"),
++  T("Caixa", "Kasten"),
+   T("Campo", "Feld"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata-Felder — kein von uns geschriebener Fakt"),
+   T("Canadá", "Kanada"),
+@@ -1287,6 +1290,7 @@
    T("Colômbia", "Kolumbien"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Mit %s bis zum Anbieter ist %s die Auflösung, die ohne Hänger läuft."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Mit HDR oder Dolby Vision wirkt die Oberfläche ausgewaschen. Automatisch senkt das Weiß um ein Fünftel und verdichtet das Glas, nur solange HDR aktiv ist. Wo der Player kein HDR meldet, ändert sich nichts."),
@@ -1229,7 +1531,7 @@ index 1e8c177..c0dd0e5 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Bleibt der Fernseher unbenutzt, wird der Bildschirm dunkler und der <b>Bildschirmschoner</b> startet: Vitrine, Uhr oder Nur abdunkeln."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Mit deinem eigenen Schlüssel gelten die Limits deines Seekr-Tarifs; dieser Fernseher setzt kein eigenes Limit. Der Cache verbraucht keine Abfragen."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Mit Datei, aber noch ohne Zeilen, lautet die Meldung nur: „Noch keine Protokollzeilen.“"),
-@@ -2515,6 +2518,7 @@
+@@ -2515,6 +2519,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet ist zurück"),
    T("Interno", "Intern"),
@@ -1237,7 +1539,7 @@ index 1e8c177..c0dd0e5 100644
    T("Início", "Startseite"),
    T("Início e Amigos", "Start und Freunde"),
    T("Início mais leve em GPUs fracas", "Leichtere Startseite auf schwachen GPUs"),
-@@ -2606,6 +2610,7 @@
+@@ -2606,6 +2611,7 @@
    T("Legendas e canais", "Untertitel und Kanäle"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arabische Untertitel mit RTL"),
@@ -1245,7 +1547,7 @@ index 1e8c177..c0dd0e5 100644
    T("Legendas no trailer", "Trailer-Untertitel"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Untertitel über die Insel, AutoSync, besseres Spulen."),
    T("Legendas, memória e telas mais fluidas.", "Untertitel, Speicher und flüssigere Bildschirme."),
-@@ -4098,6 +4103,7 @@
+@@ -4098,6 +4104,7 @@
    T("Plataformas", "Plattformen"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Player"),
@@ -1253,8 +1555,16 @@ index 1e8c177..c0dd0e5 100644
    T("Player e TV ao vivo", "Player und Live-TV"),
    T("Player e legendas", "Player und Untertitel"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5481,6 +5488,7 @@
+   T("Visual", "Optik"),
+   T("Visual novo", "Neue Optik"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Neues Aussehen, Server von zu Hause und jede Menge, was wir dir aus dem Weg geräumt haben. Dauert etwa vier Minuten."),
++  T("Visual pronto", "Fertiger Stil"),
+   T("Visíveis", "Sichtbar"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Vitrine"),
 diff --git a/src/idioma_el.h b/src/idioma_el.h
-index 4ad0dd1..76e3e8e 100644
+index 4ad0dd1..9d26256 100644
 --- a/src/idioma_el.h
 +++ b/src/idioma_el.h
 @@ -879,6 +879,7 @@
@@ -1273,7 +1583,15 @@ index 4ad0dd1..76e3e8e 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Κατεβάζει την αφίσα μιας γνωστής ταινίας με τις τρέχουσες ρυθμίσεις και δείχνει αν λειτούργησε. Η πρώτη αφίσα κάθε τίτλου δημιουργείται στον διακομιστή και μπορεί να πάρει μερικά δευτερόλεπτα."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Κατεβάζει έως 3 πηγές από διαφορετικούς διακομιστές για 8 δ η καθεμία, ξεκινώντας από τη μέση του αρχείου· τα δεδομένα απορρίπτονται."),
    T("Baixado na sessão", "Λήφθηκαν σε αυτή τη συνεδρία"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Κάθε τετράγωνο είναι ένα επεισόδιο· το χρώμα είναι η βαθμολογία."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Κάθε scraper γίνεται μία ακόμη προέλευση στο φύλλο Πηγές και τρέχει μαζί με τα addons. Καθολικά όρια μνήμης και αιτημάτων."),
+   T("Cadastrado em Ajustes › Conta", "Ορίζεται στις Ρυθμίσεις › Λογαριασμός"),
++  T("Caixa", "Πλαίσιο"),
+   T("Campo", "Πεδίο"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Πεδία του Wikidata — όχι trivia που γράψαμε εμείς"),
+   T("Canadá", "Καναδάς"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Κολομβία"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Με %s μέχρι τον πάροχο, η %s είναι η ανάλυση που παίζει χωρίς κολλήματα."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Με HDR ή Dolby Vision η διεπαφή φαίνεται ξεθωριασμένη. Το Αυτόματο μειώνει το λευκό κατά ένα πέμπτο και πυκνώνει το γυαλί, μόνο όσο το HDR είναι ενεργό. Όπου το πρόγραμμα αναπαραγωγής δεν αναφέρει HDR, δεν αλλάζει τίποτα."),
@@ -1281,7 +1599,7 @@ index 4ad0dd1..76e3e8e 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Όταν η τηλεόραση μένει αδρανής, η οθόνη σκοτεινιάζει και ξεκινά η <b>προφύλαξη οθόνης</b>: Βιτρίνα, Ρολόι ή Μόνο σκοτείνιασμα."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Με το δικό σας κλειδί ισχύουν τα όρια του πλάνου σας στο Seekr· αυτή η τηλεόραση δεν θέτει δικό της όριο. Η κρυφή μνήμη δεν καταναλώνει αιτήματα."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Με αρχείο αλλά χωρίς γραμμές, το μήνυμα είναι μόνο: «Δεν υπάρχουν ακόμα γραμμές καταγραφής.»"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Ίντερνετ"),
    T("Internet de volta", "Το ίντερνετ επέστρεψε"),
    T("Interno", "Εσωτερικό"),
@@ -1289,7 +1607,7 @@ index 4ad0dd1..76e3e8e 100644
    T("Início", "Αρχική"),
    T("Início e Amigos", "Αρχική και Φίλοι"),
    T("Início mais leve em GPUs fracas", "Ελαφρύτερη αρχική σε αδύναμες GPU"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Υπότιτλοι και κανάλια"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Αραβικοί υπότιτλοι με RTL"),
@@ -1297,7 +1615,7 @@ index 4ad0dd1..76e3e8e 100644
    T("Legendas no trailer", "Υπότιτλοι στο τρέιλερ"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Υπότιτλοι μέσω του νησιού, AutoSync, καλύτερη προώθηση."),
    T("Legendas, memória e telas mais fluidas.", "Υπότιτλοι, μνήμη και πιο ομαλές οθόνες."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Πλατφόρμες"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Πρόγραμμα αναπαραγωγής"),
@@ -1305,8 +1623,16 @@ index 4ad0dd1..76e3e8e 100644
    T("Player e TV ao vivo", "Αναπαραγωγή και ζωντανή TV"),
    T("Player e legendas", "Πρόγραμμα αναπαραγωγής και υπότιτλοι"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Εμφάνιση"),
+   T("Visual novo", "Νέα εμφάνιση"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Νέα εμφάνιση, διακομιστές από το σπίτι σας και πολλά πράγματα που βγάλαμε από τη μέση. Διαρκεί περίπου τέσσερα λεπτά."),
++  T("Visual pronto", "Έτοιμο στυλ"),
+   T("Visíveis", "Εμφανείς"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Βιτρίνα"),
 diff --git a/src/idioma_es.h b/src/idioma_es.h
-index 45bde95..32550ad 100644
+index 45bde95..c7ba782 100644
 --- a/src/idioma_es.h
 +++ b/src/idioma_es.h
 @@ -878,6 +878,7 @@
@@ -1325,7 +1651,15 @@ index 45bde95..32550ad 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Descarga el póster de una película conocida con los ajustes actuales y muestra si funcionó. El primer póster de cada título se genera en el servidor y puede tardar unos segundos."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Descarga hasta 3 fuentes de servidores distintos durante 8 s cada una, empezando a mitad del archivo; los datos se descartan."),
    T("Baixado na sessão", "Descargado en la sesión"),
-@@ -1287,6 +1289,7 @@
+@@ -1109,6 +1111,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Cada cuadrado es un episodio; el color es la nota."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Cada scraper pasa a ser un origen más en la hoja de Fuentes, funcionando junto a los addons. Límites globales de memoria y de peticiones."),
+   T("Cadastrado em Ajustes › Conta", "Configurado en Ajustes › Cuenta"),
++  T("Caixa", "Caja"),
+   T("Campo", "Campo"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Campos de Wikidata — no es una curiosidad escrita por nosotros"),
+   T("Canadá", "Canadá"),
+@@ -1287,6 +1290,7 @@
    T("Colômbia", "Colombia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Con %s hasta el proveedor, %s es la resolución que se reproduce sin cortes."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Con HDR o Dolby Vision, la interfaz se ve lavada. Automático reduce el blanco en un quinto y densifica el cristal, solo con HDR activo. Donde el reproductor no informa del HDR, no cambia nada."),
@@ -1333,7 +1667,7 @@ index 45bde95..32550ad 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Con la TV quieta, la pantalla se oscurece y entra el <b>salvapantallas</b>: Escaparate, Reloj o Solo oscurecer."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Con tu propia clave rigen los límites de tu plan en Seekr; este televisor no impone un límite propio. La caché no gasta consultas."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Con archivo y sin líneas aún, el mensaje es solo: «Ninguna línea de registro todavía.»"),
-@@ -2515,6 +2518,7 @@
+@@ -2515,6 +2519,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet de vuelta"),
    T("Interno", "Interno"),
@@ -1341,7 +1675,7 @@ index 45bde95..32550ad 100644
    T("Início", "Inicio"),
    T("Início e Amigos", "Inicio y Amigos"),
    T("Início mais leve em GPUs fracas", "Inicio más ligero en GPU débiles"),
-@@ -2606,6 +2610,7 @@
+@@ -2606,6 +2611,7 @@
    T("Legendas e canais", "Subtítulos y canales"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Subtítulos en árabe con RTL"),
@@ -1349,7 +1683,7 @@ index 45bde95..32550ad 100644
    T("Legendas no trailer", "Subtítulos en el tráiler"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Subtítulos desde la isla, AutoSync, mejor avance."),
    T("Legendas, memória e telas mais fluidas.", "Subtítulos, memoria y pantallas más fluidas."),
-@@ -4098,6 +4103,7 @@
+@@ -4098,6 +4104,7 @@
    T("Plataformas", "Plataformas"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Reproductor"),
@@ -1357,8 +1691,16 @@ index 45bde95..32550ad 100644
    T("Player e TV ao vivo", "Reproductor y TV en vivo"),
    T("Player e legendas", "Reproductor y subtítulos"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5481,6 +5488,7 @@
+   T("Visual", "Visual"),
+   T("Visual novo", "Visual nuevo"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Aspecto nuevo, servidores de tu casa y un montón de cosas que quitamos de en medio. Dura unos cuatro minutos."),
++  T("Visual pronto", "Estilo listo"),
+   T("Visíveis", "Visibles"),
+   T("Visíveis · %d", "Visibles · %d"),
+   T("Vitrine", "Escaparate"),
 diff --git a/src/idioma_fr.h b/src/idioma_fr.h
-index 6b5a5b9..0e9cdc2 100644
+index 6b5a5b9..8213d6a 100644
 --- a/src/idioma_fr.h
 +++ b/src/idioma_fr.h
 @@ -878,6 +878,7 @@
@@ -1377,7 +1719,15 @@ index 6b5a5b9..0e9cdc2 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Télécharge l'affiche d'un film connu avec les réglages actuels et indique si cela a fonctionné. La première affiche de chaque titre est générée sur le serveur et peut prendre quelques secondes."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Télécharge jusqu'à 3 sources de serveurs différents pendant 8 s chacune, en partant du milieu du fichier; les données sont ignorées."),
    T("Baixado na sessão", "Téléchargé pendant la session"),
-@@ -1287,6 +1289,7 @@
+@@ -1109,6 +1111,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Chaque carré est un épisode ; la couleur est la note."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Chaque scraper devient une origine de plus dans la feuille Sources, en parallèle des addons. Limites globales de mémoire et de requêtes."),
+   T("Cadastrado em Ajustes › Conta", "Configuré dans Réglages › Compte"),
++  T("Caixa", "Encadré"),
+   T("Campo", "Champ"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Champs Wikidata — pas une anecdote écrite par nous"),
+   T("Canadá", "Canada"),
+@@ -1287,6 +1290,7 @@
    T("Colômbia", "Colombie"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Avec %s jusqu'au fournisseur, %s est la résolution qui passe sans saccades."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Avec HDR ou Dolby Vision, l'interface paraît délavée. Automatique réduit le blanc d'un cinquième et densifie le verre, seulement quand le HDR est actif. Là où le lecteur n'indique pas le HDR, rien ne change."),
@@ -1385,7 +1735,7 @@ index 6b5a5b9..0e9cdc2 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Quand la TV reste inactive, l'écran s'assombrit et l'<b>écran de veille</b> démarre : Vitrine, Horloge ou Assombrir seulement."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Avec votre clé, les limites de votre offre Seekr s'appliquent ; ce téléviseur n'impose aucune limite propre. Le cache ne consomme pas de requêtes."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Avec un fichier mais aucune ligne, le message est juste : « Aucune ligne de journal pour l'instant. »"),
-@@ -2515,6 +2518,7 @@
+@@ -2515,6 +2519,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet est de retour"),
    T("Interno", "Interne"),
@@ -1393,7 +1743,7 @@ index 6b5a5b9..0e9cdc2 100644
    T("Início", "Accueil"),
    T("Início e Amigos", "Accueil et Amis"),
    T("Início mais leve em GPUs fracas", "Accueil plus léger sur les GPU faibles"),
-@@ -2606,6 +2610,7 @@
+@@ -2606,6 +2611,7 @@
    T("Legendas e canais", "Sous-titres et chaînes"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Sous-titres arabes avec RTL"),
@@ -1401,7 +1751,7 @@ index 6b5a5b9..0e9cdc2 100644
    T("Legendas no trailer", "Sous-titres de bande-annonce"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Sous-titres via l’îlot, AutoSync, meilleure avance rapide."),
    T("Legendas, memória e telas mais fluidas.", "Sous-titres, mémoire et écrans plus fluides."),
-@@ -4098,6 +4103,7 @@
+@@ -4098,6 +4104,7 @@
    T("Plataformas", "Plateformes"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Lecteur"),
@@ -1409,8 +1759,16 @@ index 6b5a5b9..0e9cdc2 100644
    T("Player e TV ao vivo", "Lecteur et TV en direct"),
    T("Player e legendas", "Lecteur et sous-titres"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5481,6 +5488,7 @@
+   T("Visual", "Visuel"),
+   T("Visual novo", "Nouveau visuel"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Nouveau look, serveurs de chez vous et plein de choses que nous avons ôtées de votre chemin. Environ quatre minutes."),
++  T("Visual pronto", "Style prêt"),
+   T("Visíveis", "Affichées"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Vitrine"),
 diff --git a/src/idioma_hu.h b/src/idioma_hu.h
-index e7a9473..cc86ffb 100644
+index e7a9473..57d1ae3 100644
 --- a/src/idioma_hu.h
 +++ b/src/idioma_hu.h
 @@ -879,6 +879,7 @@
@@ -1429,7 +1787,15 @@ index e7a9473..cc86ffb 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Letölti egy ismert film plakátját a jelenlegi beállításokkal, és megmutatja, sikerült-e. Minden cím első plakátja a szerveren készül el, és pár másodpercig tarthat."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Legfeljebb 3 forrást tölt le különböző szerverekről, egyenként 8 mp-ig, a fájl közepétől kezdve; az adatokat eldobja."),
    T("Baixado na sessão", "Letöltve ebben a munkamenetben"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Minden négyzet egy epizód; a szín az értékelés."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Minden scraper egy újabb forrás lesz a Források lapon, a kiegészítők mellett futva. Globális korlátok a memóriára és a kérésekre."),
+   T("Cadastrado em Ajustes › Conta", "A Beállítások › Fiók alatt állítható be"),
++  T("Caixa", "Doboz"),
+   T("Campo", "Mező"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata-mezők — nem általunk írt érdekességek"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Kolumbia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "%s sebességgel a szolgáltatóig %s az a felbontás, amely akadás nélkül megy."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "HDR-rel vagy Dolby Vision-nel a felület kifakultnak tűnik. Az Automatikus az ötödével csökkenti a fehéret és sűrűbbé teszi az üveget, csak aktív HDR mellett. Ahol a lejátszó nem jelez HDR-t, semmi sem változik."),
@@ -1437,7 +1803,7 @@ index e7a9473..cc86ffb 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Ha a tévé tétlen, a képernyő elsötétül és elindul a <b>képernyővédő</b>: Kirakat, Óra vagy Csak sötétítés."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Saját kulccsal a Seekr-csomagod korlátai érvényesek; ez a tévé nem szab saját korlátot. A gyorsítótár nem fogyaszt lekérdezést."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Ha van fájl, de még nincs sor, az üzenet csak: „Még nincsenek naplósorok.”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Visszajött az internet"),
    T("Interno", "Belső"),
@@ -1445,7 +1811,7 @@ index e7a9473..cc86ffb 100644
    T("Início", "Főoldal"),
    T("Início e Amigos", "Kezdőlap és Barátok"),
    T("Início mais leve em GPUs fracas", "Könnyebb kezdőoldal gyenge GPU-n"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Feliratok és csatornák"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arab feliratok RTL-lel"),
@@ -1453,7 +1819,7 @@ index e7a9473..cc86ffb 100644
    T("Legendas no trailer", "Felirat az előzetesben"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Feliratok a szigeten át, AutoSync, jobb tekerés."),
    T("Legendas, memória e telas mais fluidas.", "Feliratok, memória és folyékonyabb képernyők."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platformok"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Lejátszó"),
@@ -1461,8 +1827,16 @@ index e7a9473..cc86ffb 100644
    T("Player e TV ao vivo", "Lejátszó és élő TV"),
    T("Player e legendas", "Lejátszó és feliratok"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Megjelenés"),
+   T("Visual novo", "Új megjelenés"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Új külső, az otthonod szerverei és sok minden, amit félretettünk az utadból. Körülbelül négy percet vesz igénybe."),
++  T("Visual pronto", "Kész stílus"),
+   T("Visíveis", "Láthatók"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Kirakat"),
 diff --git a/src/idioma_id.h b/src/idioma_id.h
-index b61bb54..128d942 100644
+index b61bb54..e7cd74d 100644
 --- a/src/idioma_id.h
 +++ b/src/idioma_id.h
 @@ -879,6 +879,7 @@
@@ -1481,7 +1855,15 @@ index b61bb54..128d942 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Mengunduh poster film terkenal dengan pengaturan saat ini dan menunjukkan apakah berhasil. Poster pertama tiap judul dibuat di server dan bisa memakan beberapa detik."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Mengunduh hingga 3 sumber dari server berbeda selama 8 dtk masing-masing, mulai dari tengah file; datanya dibuang."),
    T("Baixado na sessão", "Diunduh pada sesi ini"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Setiap kotak adalah satu episode; warnanya adalah rating."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Setiap scraper menjadi satu asal lagi di lembar Sumber, berjalan bersama addon. Batas global untuk memori dan permintaan."),
+   T("Cadastrado em Ajustes › Conta", "Diatur di Pengaturan › Akun"),
++  T("Caixa", "Kotak"),
+   T("Campo", "Kolom"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Bidang Wikidata — bukan trivia yang kami tulis sendiri"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Kolombia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Dengan %s ke penyedia, %s adalah resolusi yang diputar tanpa tersendat."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Dengan HDR atau Dolby Vision, antarmuka tampak pudar. Otomatis menurunkan putih seperlima dan memadatkan kaca, hanya saat HDR aktif. Jika pemutar tidak melaporkan HDR, tidak ada yang berubah."),
@@ -1489,7 +1871,7 @@ index b61bb54..128d942 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Saat TV diam, layar meredup dan <b>screensaver</b> muncul: Etalase, Jam, atau Hanya redupkan."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Dengan kunci Anda sendiri, berlaku batas paket Seekr Anda; TV ini tidak menetapkan batas sendiri. Cache tidak memakai kuota kueri."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Jika ada berkas tapi belum ada baris, pesannya hanya: “Belum ada baris log.”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet kembali"),
    T("Interno", "Internal"),
@@ -1497,7 +1879,7 @@ index b61bb54..128d942 100644
    T("Início", "Beranda"),
    T("Início e Amigos", "Beranda dan Teman"),
    T("Início mais leve em GPUs fracas", "Beranda lebih ringan di GPU lemah"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Subtitel dan kanal"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Subtitel Arab dengan RTL"),
@@ -1505,7 +1887,7 @@ index b61bb54..128d942 100644
    T("Legendas no trailer", "Teks di trailer"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Subtitel lewat pulau, AutoSync, seek lebih baik."),
    T("Legendas, memória e telas mais fluidas.", "Subtitle, memori, dan layar lebih mulus."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platform"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Pemutar"),
@@ -1513,8 +1895,16 @@ index b61bb54..128d942 100644
    T("Player e TV ao vivo", "Pemutar dan TV langsung"),
    T("Player e legendas", "Pemutar dan subtitel"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Tampilan"),
+   T("Visual novo", "Tampilan baru"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Tampilan baru, server dari rumah Anda, dan banyak hal yang kami singkirkan dari jalan Anda. Sekitar empat menit."),
++  T("Visual pronto", "Gaya siap"),
+   T("Visíveis", "Ditampilkan"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Etalase"),
 diff --git a/src/idioma_it.h b/src/idioma_it.h
-index 73210a2..a7876d4 100644
+index 73210a2..9cd1e3a 100644
 --- a/src/idioma_it.h
 +++ b/src/idioma_it.h
 @@ -879,6 +879,7 @@
@@ -1533,7 +1923,15 @@ index 73210a2..a7876d4 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Scarica la locandina di un film noto con le impostazioni attuali e mostra se ha funzionato. La prima locandina di ogni titolo viene creata sul server e può richiedere qualche secondo."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Scarica fino a 3 fonti da server diversi per 8 s ciascuna, partendo da metà file; i dati vengono scartati."),
    T("Baixado na sessão", "Scaricato in questa sessione"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Ogni quadrato è un episodio; il colore è il voto."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Ogni scraper diventa un’origine in più nel foglio Fonti, in esecuzione insieme agli addon. Limiti globali di memoria e di richieste."),
+   T("Cadastrado em Ajustes › Conta", "Si configura in Impostazioni › Account"),
++  T("Caixa", "Riquadro"),
+   T("Campo", "Campo"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Campi di Wikidata — non curiosità scritte da noi"),
+   T("Canadá", "Canada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Colombia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Con %s verso il provider, %s è la risoluzione che va senza scatti."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Con HDR o Dolby Vision, l'interfaccia appare slavata. Automatico riduce il bianco di un quinto e rende il vetro più denso, solo con HDR attivo. Dove il player non segnala l'HDR, non cambia nulla."),
@@ -1541,7 +1939,7 @@ index 73210a2..a7876d4 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Quando la TV resta inattiva, lo schermo si scurisce e parte il <b>salvaschermo</b>: Vetrina, Orologio o Solo oscurare."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Con la tua chiave valgono i limiti del tuo piano Seekr; questa TV non impone un limite proprio. La cache non consuma richieste."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Con un file e nessuna riga ancora, il messaggio è solo: «Ancora nessuna riga di log.»"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet è tornato"),
    T("Interno", "Interno"),
@@ -1549,7 +1947,7 @@ index 73210a2..a7876d4 100644
    T("Início", "Home"),
    T("Início e Amigos", "Home e Amici"),
    T("Início mais leve em GPUs fracas", "Home più leggera sulle GPU deboli"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Sottotitoli e canali"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Sottotitoli in arabo con RTL"),
@@ -1557,7 +1955,7 @@ index 73210a2..a7876d4 100644
    T("Legendas no trailer", "Sottotitoli nel trailer"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Sottotitoli dall’isola, AutoSync, scorrimento migliore."),
    T("Legendas, memória e telas mais fluidas.", "Sottotitoli, memoria e schermate più fluide."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Piattaforme"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Player"),
@@ -1565,8 +1963,16 @@ index 73210a2..a7876d4 100644
    T("Player e TV ao vivo", "Player e TV in diretta"),
    T("Player e legendas", "Player e sottotitoli"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Aspetto"),
+   T("Visual novo", "Nuovo aspetto"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Nuovo aspetto, server di casa tua e un sacco di cose che abbiamo tolto di mezzo. Dura circa quattro minuti."),
++  T("Visual pronto", "Stile pronto"),
+   T("Visíveis", "Visibili"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Vetrina"),
 diff --git a/src/idioma_ja.h b/src/idioma_ja.h
-index 065193e..6defd16 100644
+index 065193e..821d93a 100644
 --- a/src/idioma_ja.h
 +++ b/src/idioma_ja.h
 @@ -879,6 +879,7 @@
@@ -1585,7 +1991,15 @@ index 065193e..6defd16 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "現在の設定で有名な映画のポスターをダウンロードし、成功したかどうかを表示します。各作品の最初のポスターはサーバーで作られるため、数秒かかることがあります。"),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "異なるサーバーの最大 3 つのソースから、ファイルの途中から 8 秒ずつダウンロードします。データは破棄されます。"),
    T("Baixado na sessão", "このセッションでのダウンロード量"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "四角は 1 話ずつを表し、色が評価を示します。"),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "各スクレイパーがソースシートのもうひとつの取得元になり、アドオンと並行して動きます。メモリとリクエストには全体の上限があります。"),
+   T("Cadastrado em Ajustes › Conta", "設定 › アカウントで登録済み"),
++  T("Caixa", "ボックス"),
+   T("Campo", "入力欄"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata のフィールド — 私たちが書いた豆知識ではありません"),
+   T("Canadá", "カナダ"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "コロンビア"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "プロバイダーまで %s なら、止まらずに再生できる解像度は %s です。"),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "HDRやDolby Visionでは、インターフェースが白っぽく見えます。自動は、HDRが有効な間だけ白を5分の1下げ、ガラスの濃度を上げます。プレーヤーがHDRを通知しない環境では何も変わりません。"),
@@ -1593,7 +2007,7 @@ index 065193e..6defd16 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "テレビを操作しないと画面が暗くなり、<b>スクリーンセーバー</b>が始まります：ショーケース、時計、暗くするだけ。"),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "ご自身のキーでは Seekr プランの上限が適用され、このテレビ独自の上限はありません。キャッシュは検索回数を消費しません。"),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "ファイルがあって行がまだないときは「ログの行はまだありません。」とだけ表示します。"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "インターネット"),
    T("Internet de volta", "インターネットが戻りました"),
    T("Interno", "内部"),
@@ -1601,7 +2015,7 @@ index 065193e..6defd16 100644
    T("Início", "ホーム"),
    T("Início e Amigos", "ホームとフレンド"),
    T("Início mais leve em GPUs fracas", "弱い GPU でも軽いホーム"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "字幕とチャンネル"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "RTL 対応のアラビア語字幕"),
@@ -1609,7 +2023,7 @@ index 065193e..6defd16 100644
    T("Legendas no trailer", "予告編の字幕"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "アイランド経由の字幕、AutoSync、より良いシーク。"),
    T("Legendas, memória e telas mais fluidas.", "字幕、メモリ、より滑らかな画面。"),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "プラットフォーム"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "プレーヤー"),
@@ -1617,8 +2031,16 @@ index 065193e..6defd16 100644
    T("Player e TV ao vivo", "プレーヤーとライブTV"),
    T("Player e legendas", "プレーヤーと字幕"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "見た目"),
+   T("Visual novo", "新しい見た目"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "新しい見た目、ご自宅のサーバー、そして邪魔だったものをたくさん取り除きました。所要時間は約4分です。"),
++  T("Visual pronto", "プリセット"),
+   T("Visíveis", "表示中"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "ショーケース"),
 diff --git a/src/idioma_lt.h b/src/idioma_lt.h
-index 2a65924..6c11769 100644
+index 2a65924..dbca78c 100644
 --- a/src/idioma_lt.h
 +++ b/src/idioma_lt.h
 @@ -879,6 +879,7 @@
@@ -1637,7 +2059,15 @@ index 2a65924..6c11769 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Atsisiunčia žinomo filmo plakatą su dabartiniais nustatymais ir parodo, ar pavyko. Pirmasis kiekvieno pavadinimo plakatas sukuriamas serveryje ir gali užtrukti kelias sekundes."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Atsisiunčia iki 3 šaltinių iš skirtingų serverių po 8 s, pradedant nuo failo vidurio; duomenys išmetami."),
    T("Baixado na sessão", "Atsisiųsta šioje sesijoje"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Kiekvienas kvadratas yra epizodas; spalva rodo įvertinimą."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Kiekvienas scraper tampa dar vienu šaltiniu Šaltinių lape ir veikia kartu su priedais. Bendri atminties ir užklausų limitai."),
+   T("Cadastrado em Ajustes › Conta", "Nustatoma Nustatymuose › Paskyra"),
++  T("Caixa", "Langelis"),
+   T("Campo", "Laukas"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata laukai — ne mūsų parašytos įdomybės"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Kolumbija"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Esant %s iki tiekėjo, %s yra skiriamoji geba, kuri groja nestringant."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Su HDR ar Dolby Vision sąsaja atrodo išblukusi. Automatinis sumažina baltą penktadaliu ir sutankina stiklą, tik kai HDR aktyvus. Kur grotuvas HDR nepraneša, niekas nesikeičia."),
@@ -1645,7 +2075,7 @@ index 2a65924..6c11769 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Kai televizorius nenaudojamas, ekranas patamsėja ir įsijungia <b>užsklanda</b>: Vitrina, Laikrodis arba Tik pritemdyti."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Su savo raktu galioja jūsų Seekr plano ribos; šis televizorius nenustato savo ribos. Talpykla užklausų nenaudoja."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Kai failas yra, bet eilučių dar nėra, pranešimas tik: „Žurnalo eilučių dar nėra.“"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internetas"),
    T("Internet de volta", "Internetas grįžo"),
    T("Interno", "Vidinis"),
@@ -1653,7 +2083,7 @@ index 2a65924..6c11769 100644
    T("Início", "Pradžia"),
    T("Início e Amigos", "Pradžia ir Draugai"),
    T("Início mais leve em GPUs fracas", "Lengvesnis pradžios ekranas silpnuose GPU"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Subtitrai ir kanalai"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arabiški subtitrai su RTL"),
@@ -1661,7 +2091,7 @@ index 2a65924..6c11769 100644
    T("Legendas no trailer", "Anonso subtitrai"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Subtitrai per salą, AutoSync, geresnis prasukimas."),
    T("Legendas, memória e telas mais fluidas.", "Subtitrai, atmintis ir sklandesni ekranai."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platformos"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Grotuvas"),
@@ -1669,8 +2099,16 @@ index 2a65924..6c11769 100644
    T("Player e TV ao vivo", "Grotuvas ir TV tiesiogiai"),
    T("Player e legendas", "Grotuvas ir subtitrai"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Išvaizda"),
+   T("Visual novo", "Nauja išvaizda"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Naujas vaizdas, serveriai iš jūsų namų ir daugybė dalykų, kuriuos pašalinome iš kelio. Užtrunka apie keturias minutes."),
++  T("Visual pronto", "Paruoštas stilius"),
+   T("Visíveis", "Rodomos"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Vitrina"),
 diff --git a/src/idioma_nl.h b/src/idioma_nl.h
-index bb0ca8a..434f1bd 100644
+index bb0ca8a..65fc6bb 100644
 --- a/src/idioma_nl.h
 +++ b/src/idioma_nl.h
 @@ -879,6 +879,7 @@
@@ -1689,7 +2127,15 @@ index bb0ca8a..434f1bd 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Haalt de poster van een bekende film op met de huidige instellingen en toont of het gelukt is. De eerste poster van elke titel wordt op de server gemaakt en kan een paar seconden duren."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Downloadt tot 3 bronnen van verschillende servers gedurende 8 s elk, beginnend halverwege het bestand; de gegevens worden weggegooid."),
    T("Baixado na sessão", "Deze sessie gedownload"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Elk vierkant is een aflevering; de kleur is het cijfer."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Elke scraper wordt een extra bron in het Bronnenblad en draait naast de addons. Globale limieten voor geheugen en verzoeken."),
+   T("Cadastrado em Ajustes › Conta", "Instellen bij Instellingen › Account"),
++  T("Caixa", "Kader"),
+   T("Campo", "Veld"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata-velden — geen trivia die wij hebben geschreven"),
+   T("Canadá", "Canada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Colombia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Met %s naar de provider is %s de resolutie die zonder haperen speelt."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Met HDR of Dolby Vision ziet de interface er flets uit. Automatisch verlaagt het wit met een vijfde en maakt het glas dichter, alleen zolang HDR actief is. Waar de speler geen HDR meldt, verandert er niets."),
@@ -1697,7 +2143,7 @@ index bb0ca8a..434f1bd 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Als de tv stilstaat, dimt het scherm en start de <b>schermbeveiliging</b>: Etalage, Klok of Alleen dimmen."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Met je eigen sleutel gelden de limieten van je Seekr-abonnement; deze tv stelt geen eigen limiet in. De cache verbruikt geen aanvragen."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Met een bestand maar nog zonder regels is de melding alleen: „Nog geen logregels.”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet is terug"),
    T("Interno", "Intern"),
@@ -1705,7 +2151,7 @@ index bb0ca8a..434f1bd 100644
    T("Início", "Start"),
    T("Início e Amigos", "Start en Vrienden"),
    T("Início mais leve em GPUs fracas", "Lichtere startpagina op zwakke GPU’s"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Ondertitels en kanalen"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arabische ondertitels met RTL"),
@@ -1713,7 +2159,7 @@ index bb0ca8a..434f1bd 100644
    T("Legendas no trailer", "Ondertitels bij trailers"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Ondertitels via het eiland, AutoSync, beter spoelen."),
    T("Legendas, memória e telas mais fluidas.", "Ondertitels, geheugen en soepelere schermen."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platforms"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Speler"),
@@ -1721,8 +2167,16 @@ index bb0ca8a..434f1bd 100644
    T("Player e TV ao vivo", "Speler en live-tv"),
    T("Player e legendas", "Speler en ondertitels"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Uiterlijk"),
+   T("Visual novo", "Nieuw uiterlijk"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Nieuw uiterlijk, servers van bij jou thuis en heel veel dat we uit de weg hebben geruimd. Duurt ongeveer vier minuten."),
++  T("Visual pronto", "Kant en klare stijl"),
+   T("Visíveis", "Zichtbaar"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Etalage"),
 diff --git a/src/idioma_no.h b/src/idioma_no.h
-index ddb1fd0..9050aaf 100644
+index ddb1fd0..6aabf27 100644
 --- a/src/idioma_no.h
 +++ b/src/idioma_no.h
 @@ -879,6 +879,7 @@
@@ -1741,7 +2195,15 @@ index ddb1fd0..9050aaf 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Henter plakaten til en kjent film med gjeldende innstillinger og viser om det virket. Den første plakaten for hver tittel bygges på serveren og kan ta noen sekunder."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Laster ned opptil 3 kilder fra ulike servere i 8 s hver, med start midt i filen; dataene forkastes."),
    T("Baixado na sessão", "Lastet ned i økten"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Hver rute er en episode; fargen er vurderingen."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Hver scraper blir enda en kilde i Kilder-arket og kjører ved siden av addons. Globale grenser for minne og forespørsler."),
+   T("Cadastrado em Ajustes › Conta", "Registrert i Innstillinger › Konto"),
++  T("Caixa", "Boks"),
+   T("Campo", "Felt"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata-felt — ikke kuriosa skrevet av oss"),
+   T("Canadá", "Canada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Colombia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Med %s til leverandøren er %s oppløsningen som spiller uten å hakke."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Med HDR eller Dolby Vision ser grensesnittet utvasket ut. Automatisk senker det hvite med en femtedel og gjør glasset tettere, bare mens HDR er aktivt. Der spilleren ikke melder HDR, endres ingenting."),
@@ -1749,7 +2211,7 @@ index ddb1fd0..9050aaf 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Når TV-en står stille, dempes skjermen og <b>skjermspareren</b> starter: Utstilling, Klokke eller Bare demp."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Med din egen nøkkel gjelder grensene i Seekr-abonnementet ditt; denne TV-en setter ingen egen grense. Hurtigbufferen bruker ingen forespørsler."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Med en fil men ingen linjer ennå er meldingen bare: «Ingen loggrader ennå.»"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internett"),
    T("Internet de volta", "Internett er tilbake"),
    T("Interno", "Internt"),
@@ -1757,7 +2219,7 @@ index ddb1fd0..9050aaf 100644
    T("Início", "Hjem"),
    T("Início e Amigos", "Hjem og Venner"),
    T("Início mais leve em GPUs fracas", "Lettere startside på svake GPU-er"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Undertekster og kanaler"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arabiske undertekster med RTL"),
@@ -1765,7 +2227,7 @@ index ddb1fd0..9050aaf 100644
    T("Legendas no trailer", "Undertekster i traileren"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Undertekster via øya, AutoSync, bedre spoling."),
    T("Legendas, memória e telas mais fluidas.", "Undertekster, minne og jevnere skjermer."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Plattformer"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Avspiller"),
@@ -1773,8 +2235,16 @@ index ddb1fd0..9050aaf 100644
    T("Player e TV ao vivo", "Spiller og direkte-tv"),
    T("Player e legendas", "Spiller og undertekster"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Utseende"),
+   T("Visual novo", "Nytt utseende"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Nytt utseende, servere hjemmefra og masse som vi har ryddet av veien. Tar omtrent fire minutter."),
++  T("Visual pronto", "Ferdig stil"),
+   T("Visíveis", "Vises"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Utstilling"),
 diff --git a/src/idioma_pl.h b/src/idioma_pl.h
-index b10c4b0..ad05043 100644
+index b10c4b0..9e187e1 100644
 --- a/src/idioma_pl.h
 +++ b/src/idioma_pl.h
 @@ -879,6 +879,7 @@
@@ -1793,7 +2263,15 @@ index b10c4b0..ad05043 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Pobiera plakat znanego filmu z bieżącymi ustawieniami i pokazuje, czy się udało. Pierwszy plakat każdego tytułu powstaje na serwerze i może potrwać kilka sekund."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Pobiera do 3 źródeł z różnych serwerów po 8 s każde, zaczynając od środka pliku; dane są odrzucane."),
    T("Baixado na sessão", "Pobrano w tej sesji"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Każdy kwadrat to odcinek; kolor to ocena."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Każdy scraper staje się dodatkowym źródłem w arkuszu Źródła i działa obok dodatków. Globalne limity pamięci i zapytań."),
+   T("Cadastrado em Ajustes › Conta", "Skonfigurujesz w Ustawienia › Konto"),
++  T("Caixa", "Ramka"),
+   T("Campo", "Pole"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Pola z Wikidata — nie ciekawostki napisane przez nas"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Kolumbia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Przy %s do dostawcy %s to rozdzielczość, która gra bez zacięć."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Przy HDR lub Dolby Vision interfejs wygląda blado. Automatyczny obniża biel o jedną piątą i zagęszcza szkło, tylko gdy HDR jest aktywny. Tam, gdzie odtwarzacz nie zgłasza HDR, nic się nie zmienia."),
@@ -1801,7 +2279,7 @@ index b10c4b0..ad05043 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Gdy telewizor stoi bezczynnie, ekran się przyciemnia i włącza się <b>wygaszacz</b>: Witryna, Zegar lub Tylko przyciemnienie."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Z własnym kluczem obowiązują limity Twojego planu Seekr; ten telewizor nie narzuca własnego limitu. Pamięć podręczna nie zużywa zapytań."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Gdy plik jest, ale nie ma jeszcze wierszy, komunikat to tylko: „Brak wierszy dziennika.”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet wrócił"),
    T("Interno", "Wewnętrzny"),
@@ -1809,7 +2287,7 @@ index b10c4b0..ad05043 100644
    T("Início", "Ekran główny"),
    T("Início e Amigos", "Start i Znajomi"),
    T("Início mais leve em GPUs fracas", "Lżejszy ekran główny na słabych GPU"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Napisy i kanały"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arabskie napisy z RTL"),
@@ -1817,7 +2295,7 @@ index b10c4b0..ad05043 100644
    T("Legendas no trailer", "Napisy w zwiastunie"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Napisy przez wyspę, AutoSync, lepsze przewijanie."),
    T("Legendas, memória e telas mais fluidas.", "Napisy, pamięć i płynniejsze ekrany."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platformy"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Odtwarzacz"),
@@ -1825,8 +2303,16 @@ index b10c4b0..ad05043 100644
    T("Player e TV ao vivo", "Odtwarzacz i TV na żywo"),
    T("Player e legendas", "Odtwarzacz i napisy"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Wygląd"),
+   T("Visual novo", "Nowy wygląd"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Nowy wygląd, serwery z Twojego domu i mnóstwo rzeczy, które usunęliśmy z drogi. Zajmuje około czterech minut."),
++  T("Visual pronto", "Gotowy styl"),
+   T("Visíveis", "Widoczne"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Witryna"),
 diff --git a/src/idioma_ptpt.h b/src/idioma_ptpt.h
-index e1c271d..5c33d8d 100644
+index e1c271d..3c76fb5 100644
 --- a/src/idioma_ptpt.h
 +++ b/src/idioma_ptpt.h
 @@ -879,6 +879,7 @@
@@ -1845,7 +2331,15 @@ index e1c271d..5c33d8d 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Transfere o cartaz de um filme conhecido com a configuração atual e mostra se correu bem. O primeiro cartaz de cada título é montado no servidor e pode demorar alguns segundos."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Transfere durante 8 s até 3 fontes de servidores diferentes, começando a meio do ficheiro; os dados são descartados."),
    T("Baixado na sessão", "Transferido na sessão"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Cada quadrado é um episódio; a cor é a nota."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Cada scraper passa a ser mais uma origem na folha de Fontes, a funcionar em conjunto com os addons. Limites globais de memória e de pedidos."),
+   T("Cadastrado em Ajustes › Conta", "Registado em Definições › Conta"),
++  T("Caixa", "Caixa"),
+   T("Campo", "Campo"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Campos do Wikidata — não é curiosidade escrita por nós"),
+   T("Canadá", "Canadá"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Colômbia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Com %s até ao fornecedor, %s é a resolução que reproduz sem engasgar."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o leitor não indica o HDR, nada muda."),
@@ -1853,7 +2347,7 @@ index e1c271d..5c33d8d 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Com a TV parada, o ecrã escurece e entra a <b>proteção de ecrã</b>: Montra, Relógio ou Só escurecer."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. A cache não gasta consultas."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Com ficheiro e nenhuma linha ainda, a frase é só: “Ainda nenhuma linha de registo.”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet de volta"),
    T("Interno", "Interno"),
@@ -1861,7 +2355,7 @@ index e1c271d..5c33d8d 100644
    T("Início", "Início"),
    T("Início e Amigos", "Início e Amigos"),
    T("Início mais leve em GPUs fracas", "Início mais leve em GPU fracas"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Legendas e canais"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Legendas em árabe com RTL"),
@@ -1869,7 +2363,7 @@ index e1c271d..5c33d8d 100644
    T("Legendas no trailer", "Legendas no trailer"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Legendas pela ilha, AutoSync, melhor avanço."),
    T("Legendas, memória e telas mais fluidas.", "Legendas, memória e ecrãs mais fluidos."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Plataformas"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Leitor"),
@@ -1877,8 +2371,16 @@ index e1c271d..5c33d8d 100644
    T("Player e TV ao vivo", "Leitor e TV em direto"),
    T("Player e legendas", "Leitor e legendas"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Visual"),
+   T("Visual novo", "Visual novo"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Visual novo, servidores da sua casa e muita coisa que tirámos do caminho. Demora cerca de quatro minutos."),
++  T("Visual pronto", "Estilo pronto"),
+   T("Visíveis", "Visíveis"),
+   T("Visíveis · %d", "Visíveis · %d"),
+   T("Vitrine", "Montra"),
 diff --git a/src/idioma_ro.h b/src/idioma_ro.h
-index cb5f7b0..c29694c 100644
+index cb5f7b0..6ca0599 100644
 --- a/src/idioma_ro.h
 +++ b/src/idioma_ro.h
 @@ -878,6 +878,7 @@
@@ -1897,7 +2399,15 @@ index cb5f7b0..c29694c 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Descarcă afișul unui film cunoscut cu setările curente și arată dacă a mers. Primul afiș al fiecărui titlu este generat pe server și poate dura câteva secunde."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Descarcă timp de 8 s până la 3 surse de pe servere diferite, începând din mijlocul fișierului; datele sunt aruncate."),
    T("Baixado na sessão", "Descărcat în sesiune"),
-@@ -1287,6 +1289,7 @@
+@@ -1109,6 +1111,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Fiecare pătrat este un episod; culoarea este nota."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Fiecare scraper devine o origine în plus în foaia Surse, rulând alături de addonuri. Limite globale de memorie și de cereri."),
+   T("Cadastrado em Ajustes › Conta", "Configurat în Setări › Cont"),
++  T("Caixa", "Casetă"),
+   T("Campo", "Câmp"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Câmpuri Wikidata — nu sunt curiozități scrise de noi"),
+   T("Canadá", "Canada"),
+@@ -1287,6 +1290,7 @@
    T("Colômbia", "Columbia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Cu %s până la furnizor, %s este rezoluția care rulează fără blocaje."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Cu HDR sau Dolby Vision, interfața pare spălăcită. Automat reduce albul cu o cincime și îngroașă sticla, doar cât HDR este activ. Unde playerul nu raportează HDR, nu se schimbă nimic."),
@@ -1905,7 +2415,7 @@ index cb5f7b0..c29694c 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Când TV-ul stă neatins, ecranul se întunecă și pornește <b>protectorul de ecran</b>: Vitrină, Ceas sau Doar întunecare."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Cu cheia ta se aplică limitele planului tău la Seekr; acest televizor nu impune o limită proprie. Cache-ul nu consumă căutări."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Cu fișier și fără linii încă, mesajul e doar: „Încă nicio linie de jurnal.”"),
-@@ -2515,6 +2518,7 @@
+@@ -2515,6 +2519,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internetul a revenit"),
    T("Interno", "Intern"),
@@ -1913,7 +2423,7 @@ index cb5f7b0..c29694c 100644
    T("Início", "Acasă"),
    T("Início e Amigos", "Acasă și Prieteni"),
    T("Início mais leve em GPUs fracas", "Acasă mai ușor pe GPU-uri slabe"),
-@@ -2606,6 +2610,7 @@
+@@ -2606,6 +2611,7 @@
    T("Legendas e canais", "Subtitrări și canale"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Subtitrări în arabă cu RTL"),
@@ -1921,7 +2431,7 @@ index cb5f7b0..c29694c 100644
    T("Legendas no trailer", "Subtitrări în trailer"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Subtitrări prin insulă, AutoSync, derulare mai bună."),
    T("Legendas, memória e telas mais fluidas.", "Subtitrări, memorie și ecrane mai fluide."),
-@@ -4098,6 +4103,7 @@
+@@ -4098,6 +4104,7 @@
    T("Plataformas", "Platforme"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Player"),
@@ -1929,8 +2439,16 @@ index cb5f7b0..c29694c 100644
    T("Player e TV ao vivo", "Player și TV live"),
    T("Player e legendas", "Player și subtitrări"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5481,6 +5488,7 @@
+   T("Visual", "Aspect"),
+   T("Visual novo", "Aspect nou"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Aspect nou, serverele de acasă și multe lucruri pe care le-am scos din drumul tău. Durează cam patru minute."),
++  T("Visual pronto", "Aspect gata"),
+   T("Visíveis", "Afișate"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Vitrină"),
 diff --git a/src/idioma_ru.h b/src/idioma_ru.h
-index 88f0dc5..d54ebec 100644
+index 88f0dc5..76cdb93 100644
 --- a/src/idioma_ru.h
 +++ b/src/idioma_ru.h
 @@ -878,6 +878,7 @@
@@ -1949,7 +2467,15 @@ index 88f0dc5..d54ebec 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Загружает постер известного фильма с текущими настройками и показывает, получилось ли. Первый постер каждого тайтла создаётся на сервере и может занять несколько секунд."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Скачивает по 8 с до 3 источников с разных серверов, начиная с середины файла; данные отбрасываются."),
    T("Baixado na sessão", "Загружено за сеанс"),
-@@ -1287,6 +1289,7 @@
+@@ -1109,6 +1111,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Каждый квадрат — эпизод; цвет — оценка."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Каждый скрапер становится ещё одним источником на листе «Источники» и работает вместе с аддонами. Общие лимиты памяти и запросов."),
+   T("Cadastrado em Ajustes › Conta", "Настроено в Настройки › Учётная запись"),
++  T("Caixa", "Плашка"),
+   T("Campo", "Поле"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Поля Wikidata — это не факты, написанные нами"),
+   T("Canadá", "Канада"),
+@@ -1287,6 +1290,7 @@
    T("Colômbia", "Колумбия"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "При %s до провайдера %s — разрешение, которое воспроизводится без зависаний."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "С HDR или Dolby Vision интерфейс выглядит блёклым. Автоматически уменьшает белый на пятую часть и делает стекло плотнее, только пока HDR активен. Где плеер не сообщает о HDR, ничего не меняется."),
@@ -1957,7 +2483,7 @@ index 88f0dc5..d54ebec 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Когда телевизор простаивает, экран темнеет и включается <b>заставка</b>: Витрина, Часы или Только затемнение."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "С вашим ключом действуют лимиты вашего тарифа в Seekr; этот телевизор не устанавливает собственного лимита. Кэш не расходует запросы."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Если файл есть, но строк ещё нет, сообщение просто: «Строк журнала пока нет.»"),
-@@ -2515,6 +2518,7 @@
+@@ -2515,6 +2519,7 @@
    T("Internet", "Интернет"),
    T("Internet de volta", "Интернет вернулся"),
    T("Interno", "Внутренний"),
@@ -1965,7 +2491,7 @@ index 88f0dc5..d54ebec 100644
    T("Início", "Главная"),
    T("Início e Amigos", "Главная и Друзья"),
    T("Início mais leve em GPUs fracas", "Главная легче на слабых GPU"),
-@@ -2606,6 +2610,7 @@
+@@ -2606,6 +2611,7 @@
    T("Legendas e canais", "Субтитры и каналы"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Арабские субтитры с RTL"),
@@ -1973,7 +2499,7 @@ index 88f0dc5..d54ebec 100644
    T("Legendas no trailer", "Субтитры в трейлере"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Субтитры через островок, AutoSync, лучшая перемотка."),
    T("Legendas, memória e telas mais fluidas.", "Субтитры, память и более плавные экраны."),
-@@ -4098,6 +4103,7 @@
+@@ -4098,6 +4104,7 @@
    T("Plataformas", "Платформы"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Плеер"),
@@ -1981,8 +2507,16 @@ index 88f0dc5..d54ebec 100644
    T("Player e TV ao vivo", "Плеер и ТВ в эфире"),
    T("Player e legendas", "Плеер и субтитры"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5481,6 +5488,7 @@
+   T("Visual", "Вид"),
+   T("Visual novo", "Новый вид"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Новый вид, серверы вашего дома и много всего, что мы убрали с дороги. Займёт около четырёх минут."),
++  T("Visual pronto", "Готовый стиль"),
+   T("Visíveis", "Показаны"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Витрина"),
 diff --git a/src/idioma_sk.h b/src/idioma_sk.h
-index 0a18f77..919468f 100644
+index 0a18f77..6a3cf05 100644
 --- a/src/idioma_sk.h
 +++ b/src/idioma_sk.h
 @@ -879,6 +879,7 @@
@@ -2001,7 +2535,15 @@ index 0a18f77..919468f 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Stiahne plagát známeho filmu s aktuálnym nastavením a ukáže, či to fungovalo. Prvý plagát každého titulu sa zostavuje na serveri a môže trvať niekoľko sekúnd."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Stiahne až 3 zdroje z rôznych serverov po 8 s, počnúc uprostred súboru; dáta sa zahodia."),
    T("Baixado na sessão", "Stiahnuté v tejto relácii"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Každý štvorček je jedna epizóda; farba je hodnotenie."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Každý scraper sa stane ďalším zdrojom v liste Zdroje a beží spolu s doplnkami. Globálne limity pamäte a požiadaviek."),
+   T("Cadastrado em Ajustes › Conta", "Nastavíte v Nastaveniach › Účet"),
++  T("Caixa", "Rámček"),
+   T("Campo", "Pole"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Polia z Wikidata — nie zaujímavosti napísané nami"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Kolumbia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Pri %s k poskytovateľovi je %s rozlíšenie, ktoré hrá bez zasekávania."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "S HDR alebo Dolby Vision pôsobí rozhranie vyblednuto. Automaticky zníži bielu o pätinu a zhustí sklo, len keď je HDR aktívne. Tam, kde prehrávač HDR nehlási, sa nič nemení."),
@@ -2009,7 +2551,7 @@ index 0a18f77..919468f 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Keď televízor stojí, obrazovka stmavne a spustí sa <b>šetrič</b>: Vitrína, Hodiny alebo Iba stmaviť."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "S vlastným kľúčom platia limity vášho plánu Seekr; tento televízor nestanovuje vlastný limit. Vyrovnávacia pamäť dopyty nespotrebúva."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "So súborom, ale bez riadkov je hlásenie len: „Zatiaľ žiadne riadky logu.“"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet je späť"),
    T("Interno", "Interné"),
@@ -2017,7 +2559,7 @@ index 0a18f77..919468f 100644
    T("Início", "Domovská obrazovka"),
    T("Início e Amigos", "Domov a Priatelia"),
    T("Início mais leve em GPUs fracas", "Ľahšia domovská obrazovka na slabých GPU"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Titulky a kanály"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arabské titulky s RTL"),
@@ -2025,7 +2567,7 @@ index 0a18f77..919468f 100644
    T("Legendas no trailer", "Titulky v traileri"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Titulky cez ostrov, AutoSync, lepšie pretáčanie."),
    T("Legendas, memória e telas mais fluidas.", "Titulky, pamäť a plynulejšie obrazovky."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platformy"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Prehrávač"),
@@ -2033,8 +2575,16 @@ index 0a18f77..919468f 100644
    T("Player e TV ao vivo", "Prehrávač a živá TV"),
    T("Player e legendas", "Prehrávač a titulky"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Vzhľad"),
+   T("Visual novo", "Nový vzhľad"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Nový vzhľad, servery z vášho domova a kopa vecí, ktoré sme vám upratali z cesty. Zaberie asi štyri minúty."),
++  T("Visual pronto", "Hotový štýl"),
+   T("Visíveis", "Zobrazené"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Vitrína"),
 diff --git a/src/idioma_sl.h b/src/idioma_sl.h
-index 272efa2..52b09dc 100644
+index 272efa2..8e41b96 100644
 --- a/src/idioma_sl.h
 +++ b/src/idioma_sl.h
 @@ -879,6 +879,7 @@
@@ -2053,7 +2603,15 @@ index 272efa2..52b09dc 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Prenese plakat znanega filma s trenutnimi nastavitvami in pokaže, ali je delovalo. Prvi plakat vsakega naslova se sestavi na strežniku in lahko traja nekaj sekund."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Prenese do 3 virov z različnih strežnikov po 8 s, začenši sredi datoteke; podatki se zavržejo."),
    T("Baixado na sessão", "Preneseno v tej seji"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Vsak kvadratek je ena epizoda; barva je ocena."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Vsak strgalnik postane še en vir na listu Viri in deluje ob dodatkih. Globalne omejitve pomnilnika in zahtev."),
+   T("Cadastrado em Ajustes › Conta", "Nastavite v Nastavitve › Račun"),
++  T("Caixa", "Okvir"),
+   T("Campo", "Polje"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Polja iz Wikidata — ne zanimivosti, ki smo jih napisali mi"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Kolumbija"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Pri %s do ponudnika je %s ločljivost, ki se predvaja brez zatikanja."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Pri HDR ali Dolby Vision je vmesnik videti zbledel. Samodejno zmanjša belino za petino in zgosti steklo, samo ko je HDR aktiven. Kjer predvajalnik HDR ne sporoča, se nič ne spremeni."),
@@ -2061,7 +2619,7 @@ index 272efa2..52b09dc 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Ko televizor miruje, se zaslon zatemni in zažene se <b>ohranjevalnik</b>: Izložba, Ura ali Samo zatemni."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Z lastnim ključem veljajo omejitve vašega paketa Seekr; ta televizor ne določa lastne omejitve. Predpomnilnik ne porablja poizvedb."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Z datoteko, a še brez vrstic, je sporočilo le: »Še ni vrstic dnevnika.«"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet je spet tu"),
    T("Interno", "Notranji"),
@@ -2069,7 +2627,7 @@ index 272efa2..52b09dc 100644
    T("Início", "Domov"),
    T("Início e Amigos", "Domov in Prijatelji"),
    T("Início mais leve em GPUs fracas", "Lažji domači zaslon na šibkih GPE"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Podnapisi in kanali"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arabski podnapisi z RTL"),
@@ -2077,7 +2635,7 @@ index 272efa2..52b09dc 100644
    T("Legendas no trailer", "Podnapisi v napovedniku"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Podnapisi prek otoka, AutoSync, boljše previjanje."),
    T("Legendas, memória e telas mais fluidas.", "Podnapisi, pomnilnik in bolj tekoči zasloni."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platforme"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Predvajalnik"),
@@ -2085,8 +2643,16 @@ index 272efa2..52b09dc 100644
    T("Player e TV ao vivo", "Predvajalnik in TV v živo"),
    T("Player e legendas", "Predvajalnik in podnapisi"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Videz"),
+   T("Visual novo", "Nov videz"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Nov videz, strežniki iz vašega doma in kup stvari, ki smo vam jih pospravili s poti. Traja približno štiri minute."),
++  T("Visual pronto", "Pripravljen slog"),
+   T("Visíveis", "Prikazane"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Izložba"),
 diff --git a/src/idioma_sr.h b/src/idioma_sr.h
-index cdac53d..49dd76b 100644
+index cdac53d..9e67e30 100644
 --- a/src/idioma_sr.h
 +++ b/src/idioma_sr.h
 @@ -879,6 +879,7 @@
@@ -2105,7 +2671,15 @@ index cdac53d..49dd76b 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Preuzima plakat poznatog filma sa trenutnim podešavanjima i pokazuje da li je uspelo. Prvi plakat svakog naslova pravi se na serveru i može potrajati nekoliko sekundi."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Preuzima do 3 izvora sa različitih servera po 8 s, počevši od sredine datoteke; podaci se odbacuju."),
    T("Baixado na sessão", "Preuzeto u ovoj sesiji"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Svaki kvadrat je jedna epizoda; boja je ocena."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Svaki scraper postaje još jedan izvor na listu Izvori i radi uz addone. Globalna ograničenja memorije i zahteva."),
+   T("Cadastrado em Ajustes › Conta", "Podešava se u Podešavanjima › Nalog"),
++  T("Caixa", "Okvir"),
+   T("Campo", "Polje"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Polja iz Wikidata — ne zanimljivosti koje smo mi napisali"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Kolumbija"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Sa %s do provajdera, %s je rezolucija koja se reprodukuje bez zastajkivanja."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Uz HDR ili Dolby Vision interfejs izgleda isprano. Automatski smanjuje belu za petinu i zgušnjava staklo, samo dok je HDR aktivan. Gde plejer ne prijavljuje HDR, ništa se ne menja."),
@@ -2113,7 +2687,7 @@ index cdac53d..49dd76b 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Kad TV miruje, ekran se zatamni i uključi se <b>čuvar ekrana</b>: Izlog, Sat ili Samo zatamni."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Sa sopstvenim ključem važe ograničenja vašeg Seekr paketa; ovaj TV ne postavlja sopstveno ograničenje. Keš ne troši upite."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Sa datotekom a bez redova poruka je samo: „Još nema redaka dnevnika.“"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet je ponovo tu"),
    T("Interno", "Interno"),
@@ -2121,7 +2695,7 @@ index cdac53d..49dd76b 100644
    T("Início", "Početna"),
    T("Início e Amigos", "Početna i Prijatelji"),
    T("Início mais leve em GPUs fracas", "Lakši početni ekran na slabim GPU-ovima"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Titlovi i kanali"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arapski titlovi s RTL-om"),
@@ -2129,7 +2703,7 @@ index cdac53d..49dd76b 100644
    T("Legendas no trailer", "Titlovi u trejleru"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Titlovi preko ostrva, AutoSync, bolje premotavanje."),
    T("Legendas, memória e telas mais fluidas.", "Titlovi, memorija i glatkiji ekrani."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platforme"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Plejer"),
@@ -2137,8 +2711,16 @@ index cdac53d..49dd76b 100644
    T("Player e TV ao vivo", "Plejer i TV uživo"),
    T("Player e legendas", "Plejer i titlovi"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Izgled"),
+   T("Visual novo", "Novi izgled"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Novi izgled, serveri iz vašeg doma i gomila stvari koje smo vam sklonili s puta. Traje oko četiri minute."),
++  T("Visual pronto", "Gotov stil"),
+   T("Visíveis", "Prikazane"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Izlog"),
 diff --git a/src/idioma_sv.h b/src/idioma_sv.h
-index 81851a5..522eff0 100644
+index 81851a5..2f2138e 100644
 --- a/src/idioma_sv.h
 +++ b/src/idioma_sv.h
 @@ -879,6 +879,7 @@
@@ -2157,7 +2739,15 @@ index 81851a5..522eff0 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Hämtar affischen för en välkänd film med aktuella inställningar och visar om det fungerade. Den första affischen för varje titel byggs på servern och kan ta några sekunder."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Laddar ner upp till 3 källor från olika servrar i 8 s vardera, med start mitt i filen; datan kasseras."),
    T("Baixado na sessão", "Nedladdat under sessionen"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Varje ruta är ett avsnitt; färgen är betyget."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Varje scraper blir ytterligare en källa i Källor-bladet och körs vid sidan av addons. Globala gränser för minne och förfrågningar."),
+   T("Cadastrado em Ajustes › Conta", "Registrerat i Inställningar › Konto"),
++  T("Caixa", "Ruta"),
+   T("Campo", "Fält"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Fält från Wikidata — inte kuriosa skriven av oss"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Colombia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Med %s till leverantören är %s upplösningen som spelas utan att hacka."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Med HDR eller Dolby Vision ser gränssnittet urblekt ut. Automatiskt sänker vitt med en femtedel och gör glaset tätare, bara när HDR är aktivt. Där spelaren inte rapporterar HDR ändras ingenting."),
@@ -2165,7 +2755,7 @@ index 81851a5..522eff0 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "När tv:n står still dämpas skärmen och <b>skärmsläckaren</b> startar: Skyltfönster, Klocka eller Bara dämpa."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Med din egen nyckel gäller gränserna i din Seekr-plan; den här tv:n sätter ingen egen gräns. Cachen förbrukar inga förfrågningar."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Med en fil men inga rader än är meddelandet bara: ”Inga loggrader än.”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Internet är tillbaka"),
    T("Interno", "Internt"),
@@ -2173,7 +2763,7 @@ index 81851a5..522eff0 100644
    T("Início", "Hem"),
    T("Início e Amigos", "Hem och Vänner"),
    T("Início mais leve em GPUs fracas", "Lättare startsida på svaga GPU:er"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Undertexter och kanaler"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Arabiska undertexter med RTL"),
@@ -2181,7 +2771,7 @@ index 81851a5..522eff0 100644
    T("Legendas no trailer", "Undertexter i trailern"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Undertexter via ön, AutoSync, bättre spolning."),
    T("Legendas, memória e telas mais fluidas.", "Undertexter, minne och mjukare skärmar."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Plattformar"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Spelare"),
@@ -2189,8 +2779,16 @@ index 81851a5..522eff0 100644
    T("Player e TV ao vivo", "Spelare och live-tv"),
    T("Player e legendas", "Spelare och undertexter"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Utseende"),
+   T("Visual novo", "Nytt utseende"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Nytt utseende, servrar hemifrån och massor som vi plockat bort ur vägen. Tar ungefär fyra minuter."),
++  T("Visual pronto", "Färdig stil"),
+   T("Visíveis", "Visas"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Skyltfönster"),
 diff --git a/src/idioma_tab.h b/src/idioma_tab.h
-index a1e97ad..4d2450f 100644
+index a1e97ad..7d0c547 100644
 --- a/src/idioma_tab.h
 +++ b/src/idioma_tab.h
 @@ -878,6 +878,7 @@
@@ -2209,7 +2807,15 @@ index a1e97ad..4d2450f 100644
    { "Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Downloads the poster of a well-known movie with the current settings and shows whether it worked. The first poster of each title is built on the server and can take a few seconds." },
    { "Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Downloads up to 3 sources from different servers for 8 s each, starting mid-file; the data is discarded." },
    { "Baixado na sessão", "Downloaded this session" },
-@@ -1287,6 +1289,7 @@
+@@ -1109,6 +1111,7 @@
+   { "Cada quadrado é um episódio; a cor é a nota.", "Each square is an episode; the color is the rating." },
+   { "Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Each scraper becomes one more origin in the Sources sheet, running alongside addons. Global limits on memory and requests." },
+   { "Cadastrado em Ajustes › Conta", "Set up in Settings › Account" },
++  { "Caixa", "Box" },
+   { "Campo", "Field" },
+   { "Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata fields — not trivia written by us" },
+   { "Canadá", "Canada" },
+@@ -1287,6 +1290,7 @@
    { "Colômbia", "Colombia" },
    { "Com %s até o provedor, %s é a resolução que toca sem travar.", "With %s to the provider, %s is the resolution that plays without stalling." },
    { "Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "With HDR or Dolby Vision, the interface looks washed out. Automatic lowers the white by a fifth and thickens the glass, only while HDR is active. Where the player does not report HDR, nothing changes." },
@@ -2217,7 +2823,7 @@ index a1e97ad..4d2450f 100644
    { "Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "When the TV sits idle, the screen dims and the <b>screensaver</b> starts: Showcase, Clock or Dim only." },
    { "Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "With your own key, your Seekr plan's limits apply; this TV sets no limit of its own. Cache does not use up lookups." },
    { "Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "With a file and no lines yet, the message is just: “No log lines yet.”" },
-@@ -2515,6 +2518,7 @@
+@@ -2515,6 +2519,7 @@
    { "Internet", "Internet" },
    { "Internet de volta", "Internet is back" },
    { "Interno", "Internal" },
@@ -2225,7 +2831,7 @@ index a1e97ad..4d2450f 100644
    { "Início", "Home" },
    { "Início e Amigos", "Home and Friends" },
    { "Início mais leve em GPUs fracas", "Lighter Home on weak GPUs" },
-@@ -2606,6 +2610,7 @@
+@@ -2606,6 +2611,7 @@
    { "Legendas e canais", "Subtitles and channels" },
    { "Legendas e notas", "Subtitles and ratings" },
    { "Legendas em árabe com RTL", "Arabic subtitles with RTL" },
@@ -2233,7 +2839,7 @@ index a1e97ad..4d2450f 100644
    { "Legendas no trailer", "Trailer captions" },
    { "Legendas pela ilha, AutoSync, seek melhor.", "Subtitles through the island, AutoSync, better seek." },
    { "Legendas, memória e telas mais fluidas.", "Subtitles, memory and smoother screens." },
-@@ -4098,6 +4103,7 @@
+@@ -4098,6 +4104,7 @@
    { "Plataformas", "Platforms" },
    { "Play tricolor", "Tricolor play" },
    { "Player", "Player" },
@@ -2241,8 +2847,16 @@ index a1e97ad..4d2450f 100644
    { "Player e TV ao vivo", "Player and live TV" },
    { "Player e legendas", "Player and subtitles" },
    { "Player e navegação", "Playback and navigation" },
+@@ -5481,6 +5488,7 @@
+   { "Visual", "Visual" },
+   { "Visual novo", "New look" },
+   { "Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "New look, servers from your home and plenty we took out of your way. Takes about four minutes." },
++  { "Visual pronto", "Ready look" },
+   { "Visíveis", "Shown" },
+   { "Visíveis · %d", "Visible · %d" },
+   { "Vitrine", "Showcase" },
 diff --git a/src/idioma_tr.h b/src/idioma_tr.h
-index 3b86bd2..ee0bb76 100644
+index 3b86bd2..ac86dca 100644
 --- a/src/idioma_tr.h
 +++ b/src/idioma_tr.h
 @@ -879,6 +879,7 @@
@@ -2261,7 +2875,15 @@ index 3b86bd2..ee0bb76 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Bilinen bir filmin afişini mevcut ayarlarla indirir ve işe yarayıp yaramadığını gösterir. Her başlığın ilk afişi sunucuda hazırlanır ve birkaç saniye sürebilir."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Farklı sunuculardan en fazla 3 kaynağı, dosyanın ortasından başlayarak her biri 8 sn indirir; veriler atılır."),
    T("Baixado na sessão", "Bu oturumda indirilen"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Her kare bir bölümdür; renk puanı gösterir."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Her scraper, Kaynaklar sayfasında bir kaynak daha olur ve addon'larla birlikte çalışır. Bellek ve istekler için genel sınırlar."),
+   T("Cadastrado em Ajustes › Conta", "Ayarlar › Hesap'tan ayarlanır"),
++  T("Caixa", "Kutu"),
+   T("Campo", "Alan"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata alanları — bizim yazdığımız bilgi notları değil"),
+   T("Canadá", "Kanada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Kolombiya"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Sağlayıcıya %s ile %s, takılmadan oynayan çözünürlüktür."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "HDR veya Dolby Vision ile arayüz soluk görünür. Otomatik, yalnızca HDR etkinken beyazı beşte bir azaltır ve camı yoğunlaştırır. Oynatıcının HDR bildirmediği yerlerde hiçbir şey değişmez."),
@@ -2269,7 +2891,7 @@ index 3b86bd2..ee0bb76 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "TV boşta kalınca ekran kararır ve <b>ekran koruyucu</b> başlar: Vitrin, Saat veya Sadece karart."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Kendi anahtarınızla Seekr planınızın sınırları geçerlidir; bu TV kendi başına bir sınır koymaz. Önbellek sorgu harcamaz."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Dosya var ama satır yoksa ileti yalnızca: “Henüz günlük satırı yok.”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "İnternet"),
    T("Internet de volta", "İnternet geri geldi"),
    T("Interno", "Dahili"),
@@ -2277,7 +2899,7 @@ index 3b86bd2..ee0bb76 100644
    T("Início", "Ana ekran"),
    T("Início e Amigos", "Ana sayfa ve Arkadaşlar"),
    T("Início mais leve em GPUs fracas", "Zayıf GPU’larda daha hafif ana sayfa"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Altyazılar ve kanallar"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "RTL ile Arapça altyazılar"),
@@ -2285,7 +2907,7 @@ index 3b86bd2..ee0bb76 100644
    T("Legendas no trailer", "Fragmanda altyazı"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Ada üzerinden altyazılar, AutoSync, daha iyi sarma."),
    T("Legendas, memória e telas mais fluidas.", "Altyazılar, bellek ve daha akıcı ekranlar."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Platformlar"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Oynatıcı"),
@@ -2293,8 +2915,16 @@ index 3b86bd2..ee0bb76 100644
    T("Player e TV ao vivo", "Oynatıcı ve canlı TV"),
    T("Player e legendas", "Oynatıcı ve altyazılar"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Görünüm"),
+   T("Visual novo", "Yeni görünüm"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Yeni görünüm, evinizdeki sunucular ve yolunuzdan çektiğimiz bir sürü şey. Yaklaşık dört dakika sürer."),
++  T("Visual pronto", "Hazır görünüm"),
+   T("Visíveis", "Görünür"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Vitrin"),
 diff --git a/src/idioma_uk.h b/src/idioma_uk.h
-index c75d6bb..dc70402 100644
+index c75d6bb..783eab9 100644
 --- a/src/idioma_uk.h
 +++ b/src/idioma_uk.h
 @@ -878,6 +878,7 @@
@@ -2313,7 +2943,15 @@ index c75d6bb..dc70402 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Завантажує постер відомого фільму з поточними налаштуваннями та показує, чи вийшло. Перший постер кожного тайтлу створюється на сервері й може зайняти кілька секунд."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Завантажує по 8 с до 3 джерел із різних серверів, починаючи із середини файлу; дані відкидаються."),
    T("Baixado na sessão", "Завантажено за сеанс"),
-@@ -1287,6 +1289,7 @@
+@@ -1109,6 +1111,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Кожен квадрат — це епізод; колір — це оцінка."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Кожен скрапер стає ще одним джерелом на аркуші «Джерела» й працює разом із додатками. Загальні обмеження пам'яті та запитів."),
+   T("Cadastrado em Ajustes › Conta", "Налаштовано в Налаштування › Обліковий запис"),
++  T("Caixa", "Блок"),
+   T("Campo", "Поле"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Поля Wikidata — це не цікавинки, написані нами"),
+   T("Canadá", "Канада"),
+@@ -1287,6 +1290,7 @@
    T("Colômbia", "Колумбія"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "З %s до постачальника %s — роздільна здатність, яка відтворюється без зависань."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "З HDR або Dolby Vision інтерфейс виглядає вицвілим. Автоматично зменшує білий на п'яту частину та робить скло щільнішим, лише коли HDR активний. Де плеєр не повідомляє про HDR, нічого не змінюється."),
@@ -2321,7 +2959,7 @@ index c75d6bb..dc70402 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Коли телевізор без дії, екран темніє і з'являється <b>заставка</b>: Вітрина, Годинник або Лише затемнення."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "З вашим ключем діють ліміти вашого плану в Seekr; цей телевізор не встановлює власного ліміту. Кеш не витрачає запити."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Якщо файл є, але рядків ще немає, повідомлення просто: «Рядків журналу поки немає.»"),
-@@ -2515,6 +2518,7 @@
+@@ -2515,6 +2519,7 @@
    T("Internet", "Інтернет"),
    T("Internet de volta", "Інтернет повернувся"),
    T("Interno", "Внутрішній"),
@@ -2329,7 +2967,7 @@ index c75d6bb..dc70402 100644
    T("Início", "Головна"),
    T("Início e Amigos", "Головна і Друзі"),
    T("Início mais leve em GPUs fracas", "Легша головна на слабких GPU"),
-@@ -2606,6 +2610,7 @@
+@@ -2606,6 +2611,7 @@
    T("Legendas e canais", "Субтитри та канали"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Арабські субтитри з RTL"),
@@ -2337,7 +2975,7 @@ index c75d6bb..dc70402 100644
    T("Legendas no trailer", "Субтитри в трейлері"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Субтитри через острівець, AutoSync, краща перемотка."),
    T("Legendas, memória e telas mais fluidas.", "Субтитри, пам'ять і плавніші екрани."),
-@@ -4098,6 +4103,7 @@
+@@ -4098,6 +4104,7 @@
    T("Plataformas", "Платформи"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Плеєр"),
@@ -2345,8 +2983,16 @@ index c75d6bb..dc70402 100644
    T("Player e TV ao vivo", "Плеєр і ТБ наживо"),
    T("Player e legendas", "Плеєр і субтитри"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5481,6 +5488,7 @@
+   T("Visual", "Вигляд"),
+   T("Visual novo", "Новий вигляд"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Новий вигляд, сервери вашого дому і купа всього, що ми прибрали з дороги. Займає близько чотирьох хвилин."),
++  T("Visual pronto", "Готовий вигляд"),
+   T("Visíveis", "Показано"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Вітрина"),
 diff --git a/src/idioma_vi.h b/src/idioma_vi.h
-index b496f2c..e7030cd 100644
+index b496f2c..56068b1 100644
 --- a/src/idioma_vi.h
 +++ b/src/idioma_vi.h
 @@ -879,6 +879,7 @@
@@ -2365,7 +3011,15 @@ index b496f2c..e7030cd 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "Tải áp phích của một bộ phim quen thuộc với cài đặt hiện tại và cho biết có thành công không. Áp phích đầu tiên của mỗi tựa được dựng trên máy chủ và có thể mất vài giây."),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "Tải tối đa 3 nguồn từ các máy chủ khác nhau, mỗi nguồn 8 giây, bắt đầu từ giữa tệp; dữ liệu sẽ bị bỏ đi."),
    T("Baixado na sessão", "Đã tải trong phiên này"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "Mỗi ô vuông là một tập; màu là điểm số."),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "Mỗi scraper trở thành thêm một nguồn trong bảng Nguồn, chạy cùng các addon. Giới hạn chung về bộ nhớ và số yêu cầu."),
+   T("Cadastrado em Ajustes › Conta", "Thiết lập tại Cài đặt › Tài khoản"),
++  T("Caixa", "Hộp"),
+   T("Campo", "Trường"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Các trường từ Wikidata — không phải trivia do chúng tôi viết"),
+   T("Canadá", "Canada"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "Colombia"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "Với %s tới nhà cung cấp, %s là độ phân giải phát mà không bị giật."),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "Với HDR hoặc Dolby Vision, giao diện trông bị nhạt. Tự động giảm một phần năm độ trắng và làm kính đặc hơn, chỉ khi HDR đang bật. Nơi trình phát không báo HDR thì không có gì thay đổi."),
@@ -2373,7 +3027,7 @@ index b496f2c..e7030cd 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "Khi TV để yên, màn hình tối đi và bật <b>bảo vệ màn hình</b>: Tủ trưng bày, Đồng hồ hoặc Chỉ làm tối."),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "Với khóa của riêng bạn, áp dụng giới hạn của gói Seekr của bạn; TV này không đặt giới hạn riêng. Bộ nhớ đệm không tốn lượt truy vấn."),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "Có tệp nhưng chưa có dòng nào, thông báo chỉ là: “Chưa có dòng nhật ký nào.”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "Internet"),
    T("Internet de volta", "Đã có Internet trở lại"),
    T("Interno", "Nội bộ"),
@@ -2381,7 +3035,7 @@ index b496f2c..e7030cd 100644
    T("Início", "Trang chủ"),
    T("Início e Amigos", "Trang chủ và Bạn bè"),
    T("Início mais leve em GPUs fracas", "Trang chủ nhẹ hơn trên GPU yếu"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "Phụ đề và kênh"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "Phụ đề tiếng Ả Rập với RTL"),
@@ -2389,7 +3043,7 @@ index b496f2c..e7030cd 100644
    T("Legendas no trailer", "Phụ đề trailer"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "Phụ đề qua đảo, AutoSync, tua tốt hơn."),
    T("Legendas, memória e telas mais fluidas.", "Phụ đề, bộ nhớ và màn hình mượt hơn."),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "Nền tảng"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "Trình phát"),
@@ -2397,8 +3051,16 @@ index b496f2c..e7030cd 100644
    T("Player e TV ao vivo", "Trình phát và TV trực tiếp"),
    T("Player e legendas", "Trình phát và phụ đề"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "Hình ảnh"),
+   T("Visual novo", "Giao diện mới"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "Giao diện mới, máy chủ từ nhà bạn và rất nhiều thứ chúng tôi đã dọn khỏi đường đi của bạn. Mất khoảng bốn phút."),
++  T("Visual pronto", "Kiểu có sẵn"),
+   T("Visíveis", "Đang hiện"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "Tủ trưng bày"),
 diff --git a/src/idioma_zhcn.h b/src/idioma_zhcn.h
-index c9396f5..31c536b 100644
+index c9396f5..798b2fd 100644
 --- a/src/idioma_zhcn.h
 +++ b/src/idioma_zhcn.h
 @@ -879,6 +879,7 @@
@@ -2417,7 +3079,15 @@ index c9396f5..31c536b 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "用当前设置下载一部知名电影的海报，并显示是否成功。每个片名的第一张海报在服务器上生成，可能需要几秒钟。"),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "从不同服务器的最多 3 个片源各下载 8 秒，从文件中间开始；数据会被丢弃。"),
    T("Baixado na sessão", "本次会话已下载"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "每个方块代表一集，颜色代表评分。"),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "每个爬虫都会成为片源页中的又一个来源，与附加组件一同运行。内存和请求有全局上限。"),
+   T("Cadastrado em Ajustes › Conta", "已在 设置 › 账号 中设置"),
++  T("Caixa", "方框"),
+   T("Campo", "输入框"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata 字段 — 不是我们撰写的冷知识"),
+   T("Canadá", "加拿大"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "哥伦比亚"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "到提供商的速度为 %s 时，%s 是能流畅播放的分辨率。"),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "在 HDR 或杜比视界下，界面会显得发白。自动模式仅在 HDR 生效时将白色降低五分之一并加深玻璃效果。播放器不报告 HDR 的平台上不会有任何变化。"),
@@ -2425,7 +3095,7 @@ index c9396f5..31c536b 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "电视闲置时，屏幕会变暗并进入<b>屏保</b>：展示、时钟或仅变暗。"),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "使用你自己的密钥时，适用你 Seekr 套餐的限额；这台电视不会另设限额。缓存不会消耗查询次数。"),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "有文件但还没有行时，只显示：“还没有日志行。”"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "网络"),
    T("Internet de volta", "网络已恢复"),
    T("Interno", "内部"),
@@ -2433,7 +3103,7 @@ index c9396f5..31c536b 100644
    T("Início", "主页"),
    T("Início e Amigos", "主页和好友"),
    T("Início mais leve em GPUs fracas", "弱 GPU 上的主页更流畅"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "字幕和频道"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "支持 RTL 的阿拉伯语字幕"),
@@ -2441,7 +3111,7 @@ index c9396f5..31c536b 100644
    T("Legendas no trailer", "预告片字幕"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "通过岛使用字幕、AutoSync、更好的快进。"),
    T("Legendas, memória e telas mais fluidas.", "字幕、内存和更流畅的画面。"),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "平台"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "播放器"),
@@ -2449,8 +3119,16 @@ index c9396f5..31c536b 100644
    T("Player e TV ao vivo", "播放器和直播电视"),
    T("Player e legendas", "播放器与字幕"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "视觉"),
+   T("Visual novo", "全新外观"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "全新外观、你家里的服务器，还有许多我们替你清走的麻烦。大约需要四分钟。"),
++  T("Visual pronto", "预设样式"),
+   T("Visíveis", "已显示"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "展示"),
 diff --git a/src/idioma_zhtw.h b/src/idioma_zhtw.h
-index aa59d89..5777510 100644
+index aa59d89..dee9247 100644
 --- a/src/idioma_zhtw.h
 +++ b/src/idioma_zhtw.h
 @@ -879,6 +879,7 @@
@@ -2469,7 +3147,15 @@ index aa59d89..5777510 100644
    T("Baixa o cartaz de um filme conhecido com a configuração atual e mostra se deu certo. O primeiro cartaz de cada título é montado no servidor e pode levar alguns segundos.", "以目前的設定下載一部知名電影的海報，並顯示是否成功。每個片名的第一張海報會在伺服器上產生，可能需要幾秒鐘。"),
    T("Baixa por 8 s até 3 fontes de servidores diferentes, começando no meio do arquivo; os dados são descartados.", "從不同伺服器的最多 3 個片源各下載 8 秒，從檔案中間開始；資料會被捨棄。"),
    T("Baixado na sessão", "本次工作階段已下載"),
-@@ -1288,6 +1290,7 @@
+@@ -1110,6 +1112,7 @@
+   T("Cada quadrado é um episódio; a cor é a nota.", "每個方塊代表一集，顏色代表評分。"),
+   T("Cada scraper vira mais uma origem na folha de Fontes, rodando junto com os addons. Limites globais de memória e de pedidos.", "每個爬蟲都會成為片源頁中的又一個來源，與附加元件一同執行。記憶體和請求有全域上限。"),
+   T("Cadastrado em Ajustes › Conta", "已在 設定 › 帳號 中設定"),
++  T("Caixa", "方框"),
+   T("Campo", "輸入框"),
+   T("Campos do Wikidata — não é curiosidade escrita por nós", "Wikidata 欄位 — 不是我們撰寫的冷知識"),
+   T("Canadá", "加拿大"),
+@@ -1288,6 +1291,7 @@
    T("Colômbia", "哥倫比亞"),
    T("Com %s até o provedor, %s é a resolução que toca sem travar.", "到供應商的速度為 %s 時，%s 是能流暢播放的解析度。"),
    T("Com HDR ou Dolby Vision, a interface fica esbranquiçada. Automático reduz o branco em um quinto e adensa os vidros, só com HDR ativo. Onde o player não informa o HDR, não muda nada.", "在 HDR 或杜比視界下，介面會顯得偏白。自動模式僅在 HDR 生效時將白色降低五分之一並加深玻璃效果。播放器不回報 HDR 的平台上不會有任何變化。"),
@@ -2477,7 +3163,7 @@ index aa59d89..5777510 100644
    T("Com a TV parada, a tela escurece e entra o <b>descanso</b>: Vitrine, Relógio ou Só escurecer.", "電視閒置時，螢幕會變暗並進入<b>螢幕保護</b>：展示、時鐘或僅變暗。"),
    T("Com a sua chave, valem os limites do seu plano no Seekr; esta TV não impõe um limite próprio. Cache não gasta consultas.", "使用你自己的金鑰時，適用你 Seekr 方案的限額；這台電視不會另設限額。快取不會消耗查詢次數。"),
    T("Com arquivo e nenhuma linha ainda, a frase é só: “Nenhuma linha de log ainda.”", "有檔案但還沒有行時，只顯示：「還沒有日誌行。」"),
-@@ -2516,6 +2519,7 @@
+@@ -2516,6 +2520,7 @@
    T("Internet", "網路"),
    T("Internet de volta", "網路已恢復"),
    T("Interno", "內部"),
@@ -2485,7 +3171,7 @@ index aa59d89..5777510 100644
    T("Início", "首頁"),
    T("Início e Amigos", "首頁和好友"),
    T("Início mais leve em GPUs fracas", "弱 GPU 上的首頁更流暢"),
-@@ -2607,6 +2611,7 @@
+@@ -2607,6 +2612,7 @@
    T("Legendas e canais", "字幕和頻道"),
    T("Legendas e notas", "Subtitles and ratings"),
    T("Legendas em árabe com RTL", "支援 RTL 的阿拉伯語字幕"),
@@ -2493,7 +3179,7 @@ index aa59d89..5777510 100644
    T("Legendas no trailer", "預告片字幕"),
    T("Legendas pela ilha, AutoSync, seek melhor.", "透過島使用字幕、AutoSync、更好的快轉。"),
    T("Legendas, memória e telas mais fluidas.", "字幕、記憶體和更流暢的畫面。"),
-@@ -4099,6 +4104,7 @@
+@@ -4099,6 +4105,7 @@
    T("Plataformas", "平台"),
    T("Play tricolor", "Tricolor play"),
    T("Player", "播放器"),
@@ -2501,6 +3187,14 @@ index aa59d89..5777510 100644
    T("Player e TV ao vivo", "播放器和直播電視"),
    T("Player e legendas", "播放器與字幕"),
    T("Player e navegação", "Playback and navigation"),
+@@ -5482,6 +5489,7 @@
+   T("Visual", "視覺"),
+   T("Visual novo", "全新外觀"),
+   T("Visual novo, servidores da sua casa e um monte de coisa que a gente tirou do caminho. Dá uns quatro minutos.", "全新外觀、你家裡的伺服器，還有許多我們替你清走的麻煩。大約需要四分鐘。"),
++  T("Visual pronto", "預設樣式"),
+   T("Visíveis", "已顯示"),
+   T("Visíveis · %d", "Visible · %d"),
+   T("Vitrine", "展示"),
 diff --git a/src/jpegrapido.c b/src/jpegrapido.c
 index f6702c4..4c054c7 100644
 --- a/src/jpegrapido.c
@@ -3204,10 +3898,57 @@ index 31bc113..7f43a83 100644
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 diff --git a/src/text.c b/src/text.c
-index 4579c5a..8cf0890 100644
+index 4579c5a..9edf0a7 100644
 --- a/src/text.c
 +++ b/src/text.c
-@@ -1714,7 +1714,11 @@ static TxtLinha linhaCache(TxtEstilo estilo, const char *s, int r, int g, int b,
+@@ -142,7 +142,12 @@ static unsigned char tentouLegendaLGCam[TXT_NCAM][TXT_LEG_N];
+ #define tentouLegendaLG (tentouLegendaLGCam[camada])
+ const char *const TXT_FAMILIAS_PT[TXT_FAMILIA_N] = {
+   "Inter", "LG Display", "Droid Sans", "Montserrat", "Roboto",
+-  "Atkinson Hyperlegible Next", "JetBrains Sans"
++  "Atkinson Hyperlegible Next", "JetBrains Sans",
++  "IBM Plex Sans Arabic", "Noto Naskh Arabic",
++#ifdef NV_FONTES_EXTRA
++  "Inter Arabic", "Al Jazeera", "Mohand", "Hacen Promoter", "Monadi", "Tonos",
++  "SF Arabic", "Amazon Ember",
++#endif
+ };
+ 
+ static Entrada cache[MAX_LINHAS];
+@@ -1270,6 +1275,32 @@ int txt_iniciar(const char *dirRecursos, float escala) {
+   snprintf(caminhoPeso[TXT_FAMILIA_JETBRAINS][0], 512, "%sfonts/JetBrainsSans-Regular.ttf", base);
+   snprintf(caminhoPeso[TXT_FAMILIA_JETBRAINS][1], 512, "%sfonts/JetBrainsSans-SemiBold.ttf", base);
+   snprintf(caminhoPeso[TXT_FAMILIA_JETBRAINS][2], 512, "%sfonts/JetBrainsSans-Bold.ttf", base);
++  snprintf(caminhoPeso[TXT_FAMILIA_PLEX_ARABE][0], 512, "%sfonts/IBMPlexSansArabic-Regular.ttf", base);
++  snprintf(caminhoPeso[TXT_FAMILIA_PLEX_ARABE][1], 512, "%sfonts/IBMPlexSansArabic-Medium.ttf", base);
++  snprintf(caminhoPeso[TXT_FAMILIA_PLEX_ARABE][2], 512, "%sfonts/IBMPlexSansArabic-Bold.ttf", base);
++  // Noto Naskh nao tem Medium: o peso do meio e o Regular.
++  snprintf(caminhoPeso[TXT_FAMILIA_NASKH][0], 512, "%sfonts/NotoNaskhArabic-Regular.ttf", base);
++  snprintf(caminhoPeso[TXT_FAMILIA_NASKH][1], 512, "%sfonts/NotoNaskhArabic-Regular.ttf", base);
++  snprintf(caminhoPeso[TXT_FAMILIA_NASKH][2], 512, "%sfonts/NotoNaskhArabic-Bold.ttf", base);
++#ifdef NV_FONTES_EXTRA
++  { // Regular e Bold de cada uma; o Medium e o Regular (nenhuma tem 500).
++    static const struct { int fam; const char *r, *b; } EXTRA[] = {
++      { TXT_FAMILIA_INTER_ARABE, "InterArabic-Regular.ttf", "InterArabic-Bold.ttf" },
++      { TXT_FAMILIA_JAZEERA, "Jazeerah.ttf", "Jazeerah bold.ttf" },
++      { TXT_FAMILIA_MOHAND, "MOHAND-Regular.ttf", "MOHANDbold.ttf" },
++      { TXT_FAMILIA_HACEN, "Hacen-Promoter .ttf", "Hacen-Promoter -Bold.ttf" },
++      { TXT_FAMILIA_MONADI, "monadi-reg.ttf", "monadi BOLD.ttf" },
++      { TXT_FAMILIA_TONOS, "tonos.ttf", "tonos bold.ttf" },
++      { TXT_FAMILIA_SF_ARABE, "iphone-Regular.ttf", "iphone.ttf" },
++      { TXT_FAMILIA_EMBER, "AmazonEmberV2-Medium.ttf", "AmazonEmberV2-Bold.ttf" },
++    };
++    for (size_t k = 0; k < sizeof EXTRA / sizeof *EXTRA; k++) {
++      snprintf(caminhoPeso[EXTRA[k].fam][0], 512, "%sfonts/extra/%s", base, EXTRA[k].r);
++      snprintf(caminhoPeso[EXTRA[k].fam][1], 512, "%sfonts/extra/%s", base, EXTRA[k].r);
++      snprintf(caminhoPeso[EXTRA[k].fam][2], 512, "%sfonts/extra/%s", base, EXTRA[k].b);
++    }
++  }
++#endif
+   snprintf(caminhoMono[0], 512, "%sfonts/JetBrainsMonoNL-Regular.ttf", base);
+   snprintf(caminhoMono[1], 512, "%sfonts/JetBrainsMonoNL-SemiBold.ttf", base);
+   snprintf(caminhoMono[2], 512, "%sfonts/Montserrat-ExtraLight-Relogio.ttf", base);
+@@ -1714,7 +1745,11 @@ static TxtLinha linhaCache(TxtEstilo estilo, const char *s, int r, int g, int b,
  
    // Orcamento estourado: devolve vazio e tenta de novo no proximo quadro. A
    // linha aparece com um quadro de atraso em vez de travar o atual.
@@ -3220,7 +3961,7 @@ index 4579c5a..8cf0890 100644
        (rastNesteQuadro >= TXT_MAX_QUADRO || txt_ms - msIniQuadro >= TXT_MS_QUADRO)) {
      txt_pendentes++;
      return vazia;
-@@ -1743,6 +1747,41 @@ static TxtLinha linhaCache(TxtEstilo estilo, const char *s, int r, int g, int b,
+@@ -1743,6 +1778,41 @@ static TxtLinha linhaCache(TxtEstilo estilo, const char *s, int r, int g, int b,
    Uint64 t0 = SDL_GetPerformanceCounter();
    SDL_Color cor = { (Uint8)r, (Uint8)g, (Uint8)b, (Uint8)a };
    float w = 0.0f;
@@ -3262,6 +4003,34 @@ index 4579c5a..8cf0890 100644
    SDL_Surface *cv = trk ? rasterTracking(estilo, s, cor, familia, *trk, &w)
                          : rasterLinha(estilo, s, cor, familia, enfase);
    // O slot ja perdeu a textura: sem linha nova ele sai da tabela.
+diff --git a/src/text.h b/src/text.h
+index 9165f9e..4995dd8 100644
+--- a/src/text.h
++++ b/src/text.h
+@@ -223,6 +223,23 @@ typedef enum {
+   TXT_FAMILIA_ROBOTO,
+   TXT_FAMILIA_ATKINSON,
+   TXT_FAMILIA_JETBRAINS,
++  // Arabe de verdade (OFL), para legenda e interface: formas de apresentacao
++  // completas (bidi.c molda por elas). Noto Naskh nao tem latim: o latim da
++  // linha sai da Inter, como em toda reserva.
++  TXT_FAMILIA_PLEX_ARABE,
++  TXT_FAMILIA_NASKH,
++#ifdef NV_FONTES_EXTRA
++  // Apple TV, build com fonts-extra/ (as fontes do Dex Hub, fora do git):
++  // tvos/prepare.sh copia os arquivos e define NV_FONTES_EXTRA.
++  TXT_FAMILIA_INTER_ARABE,
++  TXT_FAMILIA_JAZEERA,
++  TXT_FAMILIA_MOHAND,
++  TXT_FAMILIA_HACEN,
++  TXT_FAMILIA_MONADI,
++  TXT_FAMILIA_TONOS,
++  TXT_FAMILIA_SF_ARABE,
++  TXT_FAMILIA_EMBER,
++#endif
+   TXT_FAMILIA_N
+ } TxtFamilia;
+ 
 diff --git a/src/trailer.c b/src/trailer.c
 index a53aa4d..ae60256 100644
 --- a/src/trailer.c
@@ -3326,10 +4095,10 @@ index a53aa4d..ae60256 100644
  #endif
 diff --git a/src/tvos.h b/src/tvos.h
 new file mode 100644
-index 0000000..6f26657
+index 0000000..db2d2bc
 --- /dev/null
 +++ b/src/tvos.h
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,60 @@
 +// Apple TV (tvOS): ponte entre o nucleo C e a camada nativa (tvos/*.m, *.swift).
 +#ifndef NV_TVOS_H
 +#define NV_TVOS_H
@@ -3349,6 +4118,9 @@ index 0000000..6f26657
 +// O que o proximo nvp_abrir toca (player.c), para o "Tocando agora" do sistema:
 +// Central de Controle, o controle do iPhone e o cartao de informacoes da TV.
 +void nvp_info(const char *titulo, const char *subtitulo, const char *arte);
++// A fileira Continuar assistindo para o Top Shelf (NvTopShelf.m): linhas com
++// campos separados por TAB, ver catalogo.c. So grava quando muda.
++void nv_tvos_topshelf(const char *texto);
 +
 +// Teclado do sistema (NvTexto.m): abre com o texto atual; o texto inteiro e o
 +// fim voltam por texto_sistema_ponte_valor / texto_sistema_ponte_fim.

@@ -29,6 +29,9 @@ everything under `tvos/` is new code for Apple TV.
 | Mbed TLS | Apache 2.0 |
 | Lucide icons (in nuvio-native-legacy) | ISC |
 | Snapdragon Game Super Resolution (legacy GL fallback) | [SGSR license](licenses/SGSR-LICENSE.txt) |
+| IBM Plex Sans Arabic (subtitle and interface font) | SIL OFL 1.1 (`legacy/deploy/app/fonts/OFL-IBMPlexSansArabic.txt`) |
+
+Fonts put in `fonts-extra/` for a private build are not part of this repository and keep their own terms.
 
 ## Names and logos
 

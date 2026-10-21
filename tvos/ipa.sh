@@ -44,6 +44,16 @@ metadata['NuvioSwiftSceneDefaultEnabled'] = False
 path.write_bytes(plistlib.dumps(metadata, fmt=plistlib.FMT_BINARY))
 PYCODE
 VER="$VER-b$BUILD"
+# The Top Shelf extension carries the same versions, and both bundles get an
+# ad-hoc signature with their app group entitlement, so the signing tool
+# (Sideloadly) sees the group and provisions it.
+EXT="$APP/PlugIns/DexLegacyTopShelf.appex"
+if [ -d "$EXT" ]; then
+  /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VER%-b*}" "$EXT/Info.plist"
+  /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" "$EXT/Info.plist"
+  codesign -f -s - --entitlements "$PWD/TopShelf/TopShelf.entitlements" "$EXT" >/dev/null 2>&1 || echo "warning: top shelf ad-hoc sign failed"
+fi
+codesign -f -s - --entitlements "$PWD/DexLegacy.entitlements" "$APP" >/dev/null 2>&1 || echo "warning: app ad-hoc sign failed"
 TMP="$PWD/build-dev/ipa"; rm -rf "$TMP"; mkdir -p "$TMP/Payload" "$REPO/dist"
 cp -R "$APP" "$TMP/Payload/"
 (cd "$TMP" && zip -qry "$REPO/dist/NuvioLegacy-AppleTV-$VER.ipa" Payload)

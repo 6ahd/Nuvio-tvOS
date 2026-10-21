@@ -20,6 +20,9 @@ __attribute__((weak)) int arte_reserva_registrar(const char *url, const char *im
 #include "sessao.h"
 #include "perfis.h"
 #include "perfisessao.h"
+#ifdef NV_TVOS
+#include "tvos.h"
+#endif
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -2474,7 +2477,38 @@ void cat_definir_tudo(const CatItem *lista, int qtd,
 //
 // Roda sob pubTrava: a descoberta pode estar trocando o catalogo neste mesmo
 // instante, e duas trocas simultaneas liberariam o mesmo bloco duas vezes.
+#ifdef NV_TVOS
+// TOP SHELF (Apple TV): a fileira Continuar assistindo vai tambem para a
+// prateleira acima dos icones da tela inicial. Uma linha por titulo, campos
+// separados por TAB (tvos/TopShelf/ContentProvider.swift le na mesma ordem):
+//   imdb  tipo  temporada  episodio  progresso  titulo  subtitulo  imagem
+static void limparCampo(char *s) { for (; *s; s++) if (*s == '\t' || *s == '\n' || *s == '\r') *s = ' '; }
+static void topShelfPublicar(const CatItem *lista, int qtd) {
+  char texto[12 * 1400];   // na pilha: a descoberta chama de mais de um fio
+  size_t k = 0;
+  for (int i = 0; i < qtd && i < 12; i++) {
+    const CatItem *c = &lista[i];
+    char titulo[160], sub[48] = "", arte[512];
+    int w;
+    if (!c->imdb[0] || !c->titulo[0]) continue;
+    snprintf(titulo, sizeof titulo, "%s", c->titulo);
+    if (c->temporada > 0 && c->episodio > 0) snprintf(sub, sizeof sub, "S%d:E%d", c->temporada, c->episodio);
+    snprintf(arte, sizeof arte, "%s", c->backdrop[0] ? c->backdrop : c->poster);
+    limparCampo(titulo); limparCampo(arte);
+    w = snprintf(texto + k, sizeof texto - k, "%s\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n",
+                 c->imdb, c->tipo, c->temporada, c->episodio, c->progresso, titulo, sub, arte);
+    if (w < 0 || (size_t)w >= sizeof texto - k) break;
+    k += (size_t)w;
+  }
+  texto[k] = 0;
+  nv_tvos_topshelf(texto);
+}
+#endif
+
 void cat_trocar_continuar(const CatItem *lista, int qtd) {
+#ifdef NV_TVOS
+  topShelfPublicar(lista, qtd < 0 ? 0 : qtd);
+#endif
   // static (40 KB): so e usado depois de pubTrava, que serializa as chamadas.
   static CatFileira novas[CAT_FIL_MAX];
   CatItem *novo;

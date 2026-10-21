@@ -142,7 +142,12 @@ static unsigned char tentouLegendaLGCam[TXT_NCAM][TXT_LEG_N];
 #define tentouLegendaLG (tentouLegendaLGCam[camada])
 const char *const TXT_FAMILIAS_PT[TXT_FAMILIA_N] = {
   "Inter", "LG Display", "Droid Sans", "Montserrat", "Roboto",
-  "Atkinson Hyperlegible Next", "JetBrains Sans"
+  "Atkinson Hyperlegible Next", "JetBrains Sans",
+  "IBM Plex Sans Arabic", "Noto Naskh Arabic",
+#ifdef NV_FONTES_EXTRA
+  "Inter Arabic", "Al Jazeera", "Mohand", "Hacen Promoter", "Monadi", "Tonos",
+  "SF Arabic", "Amazon Ember",
+#endif
 };
 
 static Entrada cache[MAX_LINHAS];
@@ -1270,6 +1275,32 @@ int txt_iniciar(const char *dirRecursos, float escala) {
   snprintf(caminhoPeso[TXT_FAMILIA_JETBRAINS][0], 512, "%sfonts/JetBrainsSans-Regular.ttf", base);
   snprintf(caminhoPeso[TXT_FAMILIA_JETBRAINS][1], 512, "%sfonts/JetBrainsSans-SemiBold.ttf", base);
   snprintf(caminhoPeso[TXT_FAMILIA_JETBRAINS][2], 512, "%sfonts/JetBrainsSans-Bold.ttf", base);
+  snprintf(caminhoPeso[TXT_FAMILIA_PLEX_ARABE][0], 512, "%sfonts/IBMPlexSansArabic-Regular.ttf", base);
+  snprintf(caminhoPeso[TXT_FAMILIA_PLEX_ARABE][1], 512, "%sfonts/IBMPlexSansArabic-Medium.ttf", base);
+  snprintf(caminhoPeso[TXT_FAMILIA_PLEX_ARABE][2], 512, "%sfonts/IBMPlexSansArabic-Bold.ttf", base);
+  // Noto Naskh nao tem Medium: o peso do meio e o Regular.
+  snprintf(caminhoPeso[TXT_FAMILIA_NASKH][0], 512, "%sfonts/NotoNaskhArabic-Regular.ttf", base);
+  snprintf(caminhoPeso[TXT_FAMILIA_NASKH][1], 512, "%sfonts/NotoNaskhArabic-Regular.ttf", base);
+  snprintf(caminhoPeso[TXT_FAMILIA_NASKH][2], 512, "%sfonts/NotoNaskhArabic-Bold.ttf", base);
+#ifdef NV_FONTES_EXTRA
+  { // Regular e Bold de cada uma; o Medium e o Regular (nenhuma tem 500).
+    static const struct { int fam; const char *r, *b; } EXTRA[] = {
+      { TXT_FAMILIA_INTER_ARABE, "InterArabic-Regular.ttf", "InterArabic-Bold.ttf" },
+      { TXT_FAMILIA_JAZEERA, "Jazeerah.ttf", "Jazeerah bold.ttf" },
+      { TXT_FAMILIA_MOHAND, "MOHAND-Regular.ttf", "MOHANDbold.ttf" },
+      { TXT_FAMILIA_HACEN, "Hacen-Promoter .ttf", "Hacen-Promoter -Bold.ttf" },
+      { TXT_FAMILIA_MONADI, "monadi-reg.ttf", "monadi BOLD.ttf" },
+      { TXT_FAMILIA_TONOS, "tonos.ttf", "tonos bold.ttf" },
+      { TXT_FAMILIA_SF_ARABE, "iphone-Regular.ttf", "iphone.ttf" },
+      { TXT_FAMILIA_EMBER, "AmazonEmberV2-Medium.ttf", "AmazonEmberV2-Bold.ttf" },
+    };
+    for (size_t k = 0; k < sizeof EXTRA / sizeof *EXTRA; k++) {
+      snprintf(caminhoPeso[EXTRA[k].fam][0], 512, "%sfonts/extra/%s", base, EXTRA[k].r);
+      snprintf(caminhoPeso[EXTRA[k].fam][1], 512, "%sfonts/extra/%s", base, EXTRA[k].r);
+      snprintf(caminhoPeso[EXTRA[k].fam][2], 512, "%sfonts/extra/%s", base, EXTRA[k].b);
+    }
+  }
+#endif
   snprintf(caminhoMono[0], 512, "%sfonts/JetBrainsMonoNL-Regular.ttf", base);
   snprintf(caminhoMono[1], 512, "%sfonts/JetBrainsMonoNL-SemiBold.ttf", base);
   snprintf(caminhoMono[2], 512, "%sfonts/Montserrat-ExtraLight-Relogio.ttf", base);

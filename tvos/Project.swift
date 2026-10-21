@@ -49,7 +49,9 @@ let app: Target = .target(
             basedOnDependencyAnalysis: false
         ),
     ],
+    entitlements: .file(path: "DexLegacy.entitlements"),
     dependencies: [
+        .target(name: "DexLegacyTopShelf"),
         .package(product: "AetherEngine"),
         .xcframework(path: "Frameworks/NvDeps.xcframework"),
         .sdk(name: "OpenGLES", type: .framework),
@@ -71,6 +73,7 @@ let app: Target = .target(
         .sdk(name: "CoreFoundation", type: .framework),
         .sdk(name: "CoreBluetooth", type: .framework),
         .sdk(name: "AVKit", type: .framework),
+        .sdk(name: "TVServices", type: .framework),
         .sdk(name: "CoreMedia", type: .framework),
         .sdk(name: "CoreVideo", type: .framework),
         .sdk(name: "VideoToolbox", type: .framework),
@@ -95,6 +98,22 @@ let app: Target = .target(
     ])
 )
 
+// The Top Shelf: Continue Watching above the Apple TV home screen icons
+// (TopShelf/ContentProvider.swift), fed by the app through the app group.
+let topShelf: Target = .target(
+    name: "DexLegacyTopShelf",
+    destinations: [.appleTv],
+    product: .tvTopShelfExtension,
+    bundleId: "\(bundleID).topshelf",
+    deploymentTargets: .tvOS("26.0"),
+    infoPlist: .file(path: "TopShelf/Info.plist"),
+    sources: ["TopShelf/**/*.swift"],
+    entitlements: .file(path: "TopShelf/TopShelf.entitlements"),
+    dependencies: [.sdk(name: "TVServices", type: .framework)],
+    settings: .settings(base: ["SWIFT_VERSION": "5.0", "CODE_SIGN_STYLE": "Automatic",
+                               "TARGETED_DEVICE_FAMILY": "3"])
+)
+
 // Test-only: drives the Siri Remote in the simulator from command files
 // (Remote/RemoteDriver.swift). Never part of the shipped app.
 let remote: Target = .target(
@@ -117,7 +136,7 @@ let project = Project(
         // prepare_engine.py pins the release and enables object audio traits.
         .local(path: "../vendor/AetherEngine-7.40.1"),
     ],
-    targets: [app, remote],
+    targets: [app, topShelf, remote],
     schemes: [
         .scheme(
             name: "Remote",

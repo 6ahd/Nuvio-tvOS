@@ -16,3 +16,5 @@ ipa/
 xcuserdata/
 __pycache__/
 *.pyc
+/fonts-extra/
+legacy/deploy/app/fonts/extra/

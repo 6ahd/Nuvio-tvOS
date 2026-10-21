@@ -31,4 +31,15 @@ python3 "$HERE/prepare_engine.py" "$REPO"
 
 [ -f "$REPO/config.env" ] || echo "warning: no config.env (copy config.env.example); account features will not work"
 bash "$HERE/generate-config.sh" "$REPO/config.env" "$HERE/Generated/nv_config.h" "$LEGACY_TAG"
+# Private subtitle/interface fonts (the Dex Hub ones), never in git: put the
+# .ttf files in fonts-extra/ at the repo root. They ship in the app's
+# fonts/extra/ and NV_FONTES_EXTRA adds their families to the font lists.
+EXTRA_DST="$REPO/legacy/deploy/app/fonts/extra"
+rm -rf "$EXTRA_DST"
+if ls "$REPO"/fonts-extra/*.ttf >/dev/null 2>&1; then
+  mkdir -p "$EXTRA_DST"
+  cp "$REPO"/fonts-extra/*.ttf "$EXTRA_DST"/
+  echo '#define NV_FONTES_EXTRA 1' >> "$HERE/Generated/nv_config.h"
+  echo "fonts-extra: $(ls "$EXTRA_DST" | wc -l | tr -d ' ') font files"
+fi
 cd "$HERE" && tuist generate --no-open
