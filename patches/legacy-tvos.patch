@@ -632,7 +632,7 @@ index 19d789b..a94c416 100644
    if (!tex || !progs[GFX_SNAP].prog || miniAtiva || snapAtivo) return;
    if (!gfx_mini_alvo(&warmAlvo, 1, 1)) return;
    GLfloat clear[4];
-diff --git b/src/gfx_swiftscene.inc b/src/gfx_swiftscene.inc
+diff --git a/src/gfx_swiftscene.inc b/src/gfx_swiftscene.inc
 new file mode 100644
 index 0000000..d8db3f1
 --- /dev/null
@@ -2682,7 +2682,7 @@ index e3cb44d..b4b8829 100644
    gfx_escala_sair(ant);
  }
  static void menu_desenharCorpo_(Uint32 agora) {
-diff --git b/src/nativeui.h b/src/nativeui.h
+diff --git a/src/nativeui.h b/src/nativeui.h
 new file mode 100644
 index 0000000..1a31d2d
 --- /dev/null
@@ -2754,7 +2754,7 @@ index 6b5e27c..11ee201 100644
      // ANEL CONCENTRICO, e nao um contorno pintado por cima: um disco branco
      // atras, ligeiramente maior. E o padrao que a home ja usa no avatar social,
 diff --git a/src/player.c b/src/player.c
-index 9a26693..76eab5d 100644
+index 9a26693..b5e969f 100644
 --- a/src/player.c
 +++ b/src/player.c
 @@ -24,6 +24,7 @@
@@ -2819,16 +2819,21 @@ index 9a26693..76eab5d 100644
    retomarSeg = 0.0; retomadaNaPreparacao = 0;
  #endif
    botao = PLR_PLAY;
-@@ -2004,7 +2005,7 @@ static void tocarFonteInterno(const char *url) {
+@@ -2004,7 +2005,12 @@ static void tocarFonteInterno(const char *url) {
    memlog_evento("load"); memQuadroPendente = 1;
    cacheboost_backend_buffer(cacheboost_buffer_mb(ajustes_buffer_preset(), memlog_livre_mb()));
    { char px[96];
 -#ifdef NV_ANDROID
++#ifdef NV_TVOS
++    { const CatItem *ci = item(); char sub[32] = "";
++      if (ci && !ehCanal() && epT > 0 && epE > 0) snprintf(sub, sizeof sub, "S%d:E%d", epT, epE);
++      nvp_info(ci ? ci->titulo : "", sub, ci ? (ci->backdrop[0] ? ci->backdrop : ci->poster) : ""); }
++#endif
 +#if defined(NV_ANDROID) || defined(NV_TVOS)
      // app.c define episodio e "do inicio" antes de entregar a fonte. O
      // instante viaja junto da URL, nunca numa variavel pendente do Kotlin.
      // So o percentual (retomada da conta, sem registro local com segundos):
-@@ -2041,6 +2042,17 @@ static void tocarFonteInterno(const char *url) {
+@@ -2041,6 +2047,17 @@ static void tocarFonteInterno(const char *url) {
  static void sairParaExterno(void) { saindo = 1; pediuSair = 1; }
  #endif
  static void tocarFonte(const char *url) {
@@ -2846,7 +2851,7 @@ index 9a26693..76eab5d 100644
  #ifdef NV_ANDROID
    const CatItem *c = item();   // #501: Interno / Externo / Perguntar sempre
    if (extplayer_tentar(url, c ? c->titulo : "", c && artehero_eh_anime(c), tocarFonteInterno, sairParaExterno)) return;
-@@ -4295,7 +4307,7 @@ void player_atualizar(float dt, Uint32 agora) {
+@@ -4295,7 +4312,7 @@ void player_atualizar(float dt, Uint32 agora) {
    // videoInfo chega — segundos depois da abertura. Sem esta releitura o modo
    // ficaria calculado com o chute de 16:9 para sempre, e num arquivo 3840x1606
    // (que e o caso real medido nesta TV) o "Original" cortaria a imagem.
@@ -2855,7 +2860,7 @@ index 9a26693..76eab5d 100644
    if (!comVideo) aspPendente = 0;   // fonte fechada: cancela
    else if (aspPendente && video_pronto()) {
      // video_pronto() = primeiro quadro renderizado (EV_PRIMEIRO_QUADRO).
-@@ -4405,13 +4417,13 @@ void player_atualizar(float dt, Uint32 agora) {
+@@ -4405,13 +4422,13 @@ void player_atualizar(float dt, Uint32 agora) {
      if (retomadaAplicada || !video_pronto()) prontoDesde = 0;
      else if (!prontoDesde) prontoDesde = agora | 1;
      if (!retomadaAplicada && video_pronto() && d>1.0 &&
@@ -3096,7 +3101,7 @@ index ecd3e4e..784824e 100644
    { const char *o = getenv("NUVIO_REDE_OCIOSO_MS");
      if (o && *o) ociosoMaxMs = strtoul(o, NULL, 10); }
    if (!curl_init || !curl_setopt_f || !curl_perform) {
-diff --git b/src/swiftscene.h b/src/swiftscene.h
+diff --git a/src/swiftscene.h b/src/swiftscene.h
 new file mode 100644
 index 0000000..dd8b250
 --- /dev/null
@@ -3319,12 +3324,12 @@ index a53aa4d..ae60256 100644
  #else
    return 1;
  #endif
-diff --git b/src/tvos.h b/src/tvos.h
+diff --git a/src/tvos.h b/src/tvos.h
 new file mode 100644
-index 0000000..8b6d86b
+index 0000000..6f26657
 --- /dev/null
 +++ b/src/tvos.h
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,57 @@
 +// Apple TV (tvOS): ponte entre o nucleo C e a camada nativa (tvos/*.m, *.swift).
 +#ifndef NV_TVOS_H
 +#define NV_TVOS_H
@@ -3341,6 +3346,9 @@ index 0000000..8b6d86b
 +// 1 = o proximo nvp_abrir e um trailer: sem "Ajustar a taxa de quadros" (a
 +// troca de modo da TV apaga a tela por 1 a 3 s antes de cada trailer).
 +void nvp_trailer(int sim);
++// O que o proximo nvp_abrir toca (player.c), para o "Tocando agora" do sistema:
++// Central de Controle, o controle do iPhone e o cartao de informacoes da TV.
++void nvp_info(const char *titulo, const char *subtitulo, const char *arte);
 +
 +// Teclado do sistema (NvTexto.m): abre com o texto atual; o texto inteiro e o
 +// fim voltam por texto_sistema_ponte_valor / texto_sistema_ponte_fim.
@@ -3479,7 +3487,7 @@ index bd4c4b9..35ec08c 100644
  int video_luna(const char *uri, const char *payload, void (*callback)(const char *, void *), void *context);
  #endif
  #endif
-diff --git b/src/video_tvos.c b/src/video_tvos.c
+diff --git a/src/video_tvos.c b/src/video_tvos.c
 new file mode 100644
 index 0000000..f35abc1
 --- /dev/null

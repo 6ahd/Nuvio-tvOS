@@ -14,6 +14,9 @@ void nvp_abrir(const char *url, const char *cabecalhos, int inicioMs, int geraca
 // 1 = o proximo nvp_abrir e um trailer: sem "Ajustar a taxa de quadros" (a
 // troca de modo da TV apaga a tela por 1 a 3 s antes de cada trailer).
 void nvp_trailer(int sim);
+// O que o proximo nvp_abrir toca (player.c), para o "Tocando agora" do sistema:
+// Central de Controle, o controle do iPhone e o cartao de informacoes da TV.
+void nvp_info(const char *titulo, const char *subtitulo, const char *arte);
 
 // Teclado do sistema (NvTexto.m): abre com o texto atual; o texto inteiro e o
 // fim voltam por texto_sistema_ponte_valor / texto_sistema_ponte_fim.

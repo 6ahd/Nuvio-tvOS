@@ -15,6 +15,7 @@
 import AVFoundation
 import Combine
 import AetherEngine
+import MediaPlayer
 import UIKit
 
 @MainActor
@@ -35,6 +36,12 @@ final class NvPlayer {
     private var glOpaqueSaved: Bool?
     /// The next open is a trailer (nvp_trailer): no display mode switch.
     var nextIsTrailer = false
+    /// What the next film or episode is (nvp_info, player.c), for the system's
+    /// Now Playing: Control Center, the iPhone remote and the TV's info card.
+    var nextInfo: (title: String, subtitle: String, art: String)?
+    private var nowPlaying: [String: Any] = [:]
+    private var artTask: Task<Void, Never>?
+    private weak var commandSession: MPNowPlayingSession?
 
     // What has already been reported to C for this session.
     private var sentReady = false
@@ -110,6 +117,8 @@ final class NvPlayer {
         stopEngine()
         let isTrailer = nextIsTrailer
         nextIsTrailer = false
+        let info = isTrailer ? nil : nextInfo
+        nextInfo = nil
         uninstall()
         guard let u = URL(string: url) ?? URL(string: url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
             NSLog("[tvos] player: invalid URL")
@@ -133,6 +142,9 @@ final class NvPlayer {
                 self.cueIndex.update(cues, start: { $0.startTime }, end: { $0.endTime })
             }
         }
+        // Films and episodes own the system Now Playing session; trailers stay out of it.
+        eng.ownsVideoNowPlayingSession = !isTrailer
+        stageNowPlaying(eng, info)
         install()
         eng.bind(view: view)
         eng.videoGravity = .resizeAspect
@@ -173,6 +185,7 @@ final class NvPlayer {
                 guard let self, self.active, self.session == mySession, !Task.isCancelled else { return }
                 if startMs > 0 { nv_tvos_retomada(generation, 1) }
                 if self.wantPaused { eng.pause() } else { eng.play() }
+                if !isTrailer { self.configureRemoteCommands(eng) }
             } catch {
                 guard let self, self.active, self.session == mySession, !Task.isCancelled,
                       !(error is CancellationError) else { return }
@@ -185,6 +198,86 @@ final class NvPlayer {
     func stop() {
         stopEngine()
         uninstall()
+    }
+
+    // MARK: Now Playing
+
+    private func stageNowPlaying(_ eng: AetherEngine, _ info: (title: String, subtitle: String, art: String)?) {
+        artTask?.cancel()
+        artTask = nil
+        guard let info, !info.title.isEmpty else {
+            nowPlaying = [:]
+            eng.setVideoNowPlayingInfo([:])
+            return
+        }
+        var np: [String: Any] = [MPMediaItemPropertyTitle: info.title,
+                                 MPNowPlayingInfoPropertyMediaType: MPNowPlayingInfoMediaType.video.rawValue]
+        if !info.subtitle.isEmpty { np[MPMediaItemPropertyArtist] = info.subtitle }
+        nowPlaying = np
+        eng.setVideoNowPlayingInfo(np)
+        guard let url = URL(string: info.art), url.scheme?.hasPrefix("http") == true else { return }
+        let mySession = session
+        artTask = Task { @MainActor [weak self] in
+            guard let (data, _) = try? await URLSession.shared.data(from: url),
+                  let image = UIImage(data: data), !Task.isCancelled,
+                  let self, self.session == mySession, let eng = self.engine else { return }
+            // decoded here, once: the system asks for the artwork off the main thread
+            let ready = image.preparingForDisplay() ?? image
+            var np = self.nowPlaying
+            np[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: ready.size) { _ in ready }
+            self.nowPlaying = np
+            eng.setVideoNowPlayingInfo(np)
+        }
+    }
+
+    /// Control Center and the iPhone remote: play, pause and the scrubber. Play and
+    /// pause go through the core (the same Play/Pause key the Siri Remote sends), so
+    /// its controls and saved position stay in step; seeking goes to the engine.
+    private enum RemoteAction { case play, pause, toggle, position(Double), skip(Double) }
+
+    private func configureRemoteCommands(_ eng: AetherEngine) {
+        guard let s = eng.videoNowPlayingSession, s !== commandSession else { return }
+        commandSession = s
+        let c = s.remoteCommandCenter
+        c.playCommand.isEnabled = true
+        c.playCommand.addTarget { _ in NvPlayer.remoteEntry(.play) }
+        c.pauseCommand.isEnabled = true
+        c.pauseCommand.addTarget { _ in NvPlayer.remoteEntry(.pause) }
+        c.togglePlayPauseCommand.isEnabled = true
+        c.togglePlayPauseCommand.addTarget { _ in NvPlayer.remoteEntry(.toggle) }
+        c.changePlaybackPositionCommand.isEnabled = true
+        c.changePlaybackPositionCommand.addTarget { event in
+            guard let e = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
+            return NvPlayer.remoteEntry(.position(e.positionTime))
+        }
+        c.skipForwardCommand.isEnabled = true
+        c.skipForwardCommand.preferredIntervals = [10]
+        c.skipForwardCommand.addTarget { _ in NvPlayer.remoteEntry(.skip(10)) }
+        c.skipBackwardCommand.isEnabled = true
+        c.skipBackwardCommand.preferredIntervals = [10]
+        c.skipBackwardCommand.addTarget { _ in NvPlayer.remoteEntry(.skip(-10)) }
+    }
+
+    /// Commands normally arrive on the main thread; anything else is moved there.
+    nonisolated private static func remoteEntry(_ action: RemoteAction) -> MPRemoteCommandHandlerStatus {
+        if Thread.isMainThread {
+            return MainActor.assumeIsolated { NvPlayer.shared.handleRemote(action) }
+        }
+        DispatchQueue.main.async { _ = NvPlayer.shared.handleRemote(action) }
+        return .success
+    }
+
+    private func handleRemote(_ action: RemoteAction) -> MPRemoteCommandHandlerStatus {
+        guard active, let eng = engine else { return .commandFailed }
+        func togglePlayPause() { nvui_key(6, 1); nvui_key(6, 0) }
+        switch action {
+        case .play: if wantPaused { togglePlayPause() }
+        case .pause: if !wantPaused { togglePlayPause() }
+        case .toggle: togglePlayPause()
+        case .position(let seconds): seek(ms: Int((seconds * 1000).rounded()))
+        case .skip(let step): seek(ms: Int(max(0, eng.currentTime + step) * 1000))
+        }
+        return .success
     }
 
     private func stopEngine() {
@@ -440,6 +533,14 @@ func nvp_abrir(_ url: UnsafePointer<CChar>?, _ cab: UnsafePointer<CChar>?, _ ini
 
 @_cdecl("nvp_trailer")
 func nvp_trailer(_ sim: Int32) { onMain { NvPlayer.shared.nextIsTrailer = sim != 0 } }
+
+@_cdecl("nvp_info")
+func nvp_info(_ titulo: UnsafePointer<CChar>?, _ sub: UnsafePointer<CChar>?, _ arte: UnsafePointer<CChar>?) {
+    let t = titulo.map { String(cString: $0) } ?? ""
+    let s = sub.map { String(cString: $0) } ?? ""
+    let a = arte.map { String(cString: $0) } ?? ""
+    onMain { NvPlayer.shared.nextInfo = (t, s, a) }
+}
 
 @_cdecl("nvp_parar")
 func nvp_parar() { onMain { NvPlayer.shared.stop() } }

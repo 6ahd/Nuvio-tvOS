@@ -2005,6 +2005,11 @@ static void tocarFonteInterno(const char *url) {
   memlog_evento("load"); memQuadroPendente = 1;
   cacheboost_backend_buffer(cacheboost_buffer_mb(ajustes_buffer_preset(), memlog_livre_mb()));
   { char px[96];
+#ifdef NV_TVOS
+    { const CatItem *ci = item(); char sub[32] = "";
+      if (ci && !ehCanal() && epT > 0 && epE > 0) snprintf(sub, sizeof sub, "S%d:E%d", epT, epE);
+      nvp_info(ci ? ci->titulo : "", sub, ci ? (ci->backdrop[0] ? ci->backdrop : ci->poster) : ""); }
+#endif
 #if defined(NV_ANDROID) || defined(NV_TVOS)
     // app.c define episodio e "do inicio" antes de entregar a fonte. O
     // instante viaja junto da URL, nunca numa variavel pendente do Kotlin.
